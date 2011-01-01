@@ -1,0 +1,55 @@
+lang=$(env | grep -w "LANG" | sed -e 's/\..*//;s/LANG=//;s/_.*//')
+
+packages="
+# Gnome minimal packages
+################
+xfce4
+
+# display manager
+################
+gdm
+#slim
+
+# Browser
+#########################
+chromium-browser
+chromium-codecs-ffmpeg-extra
+chromium-browser-l10n
+# firefox
+
+# APT
+#############
+aptitude
+synaptic
+
+# BOOT
+#############
+#grub-pc
+
+# SYSTEM
+##############
+ntfs-3g
+ntfs-config
+scrounge-ntfs
+hal
+
+# DOCS and locales
+############
+language-selector
+language-support-$lang
+language-pack-$lang
+language-pack-gnome-$lang-base
+language-pack-gnome-$lang
+
+# KERNEL
+#############
+linux-generic
+linux-image-generic
+linux-headers-generic
+ubuntu-restricted-extras
+
+# X-server
+#############
+x-window-system-core
+
+"

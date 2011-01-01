@@ -1,0 +1,268 @@
+#!/bin/bash
+# Dernière modif le 23/12/2009 par Youjin
+BASERUN="190.53"
+case $1 in 
+start)
+
+if [[ $(cat /proc/cmdline | grep "proprio=false") ]]; then
+	exit 0
+fi
+
+ARCHI="`uname -m`"
+case $ARCHI in
+	i686) 
+		ARCHI="x86"
+		pkg="pkg1"
+	;;
+	x86_64)
+		ARCHI="x86_64"
+		pkg="pkg2"
+	;;
+	*)
+		sleep 2
+		exit 1
+	;;
+esac
+
+## tue usplash
+usplash_down
+chvt 2
+chvt 8
+
+DIST_VERSION="$(lsb_release -cs)"
+
+echo -e "Configuration graphique... \n"
+
+# script de génération de fichier de configuration pour Xorg
+function GENXORG() {
+if [[ $DIST_VERSION == "karmic" ]];then
+
+rm /etc/X11/xorg.conf &>/dev/null
+
+cat <<EOF>> "/etc/X11/xorg.conf"
+# Genere par ubukey (module activer-driver-proprio_NVIDIA)
+Section "Device"
+	Identifier	"Configured Video Device"
+	Driver		"$DRIVER"
+EndSection
+
+Section "Monitor"
+	Identifier	"Configured Monitor"
+EndSection
+
+Section "Screen"
+	Identifier	"Default Screen"
+	Monitor		"Configured Monitor"
+	Device		"Configured Video Device"
+EndSection
+EOF
+
+else
+
+	test=$(lspci -b | grep VGA | awk '{print $1}')
+	testa=$(echo "$test" | sed 's/:.*//')
+	testb=$(echo "$test" | sed 's/\..*//;s/.*://')
+	testc=$(echo "$test" | sed 's/.*\.//')
+
+	if [[ "$testa" != "0" && "$testa" -lt "10" ]]; then
+		testa=$(echo "$testa" | cut -c 2)
+	fi
+
+	if [[ "$testb" != "0" && "$testb" -lt "10" ]]; then
+		testb=$(echo "$testb" | cut -c 2)
+	fi
+
+	if [[ "$testc" != "0" && "$testc" -lt "10" ]]; then
+		testc=$(echo "$testc" | cut -c 2)
+	fi
+
+	BUSID="BusID \"PCI:$testa:$testb:$testc\""
+	KeyMap=$(grep "XKBLAYOUT=" /etc/default/console-setup | cut -d\" -f2)
+
+	dpkg-reconfigure -fnoninteractive --no-reload -phigh xserver-xorg &>/dev/null
+
+	sed -i 's/Option.*\"XkbLayout\".*/Option      \"XkbLayout\" \"'"$KeyMap"'\"/' /etc/X11/xorg.conf &>/dev/null
+	sed -i '/BusID/d' /etc/X11/xorg.conf
+
+	if [[ -n "$DRIVER" && $DRIVER = "radeonhd" ]]; then
+		sed -i 's/Section \"Device\"\n*/Section \"Device\"\n\t Driver \"'$DRIVER'\"\n\t Option  \"DRI\"\n\t '"$BUSID"'/' /etc/X11/xorg.conf
+	else
+		sed -i 's/Section \"Device\"\n*/Section \"Device\"\n\t Driver \"'$DRIVER'\"\n\t '"$BUSID"'/' /etc/X11/xorg.conf
+
+	fi
+
+fi
+echo -e "Xorg pour driver $DRIVER genere... OK"
+
+}
+
+# Desinstalle un .run si existant (sauf si on remet le meme) pour éviter les conflits
+
+function AUTORMRUN() {
+## On verifie si un .run est installé
+cd /opt/reserve
+RUN_VERSION_INSTALLE="`sh NVIDIA-Linux-$ARCHI-$BASERUN-$pkg.run -i | grep version | sed 's/.*://;s/ //;s/).//'`"
+
+## Si un .run est installé, et qu'il est différend de celui que l'on veut installer
+
+if [[ $RUN_VERSION_INSTALLE && $RUN_VERSION_INSTALLE != $RUN ]];then 
+echo -e "Desinstallation du pilote nvidia v$RUN_VERSION_INSTALLE"
+sh NVIDIA-Linux-$ARCHI-$RUN-$pkg.run -s --uninstall
+fi
+}
+
+
+echo -n "Detection du pilote graphique..."
+
+VIDEO_CARDS=`lspci | grep VGA`
+NUM_CARDS=`echo ${VIDEO_CARDS} | wc -l`
+if [ ${NUM_CARDS} -eq 1 ]; then
+		NVIDIA=`echo ${VIDEO_CARDS} | grep "nVidia Corporation"`
+		INTEL=`echo ${VIDEO_CARDS} | grep "*915" | grep "*945"`
+		ATI=`echo ${VIDEO_CARDS} | grep "ATI Technologies"`
+fi
+
+
+
+# NVIDIA detecté, prendre driver proprio si dispo
+if [ "$NVIDIA" ]; then
+echo -e "Carte Nvidia detecte, demarrage de la configuration..."
+
+dialog --title "Choix du pilote graphique" \
+--checklist "Choisissez le driver a utiliser
+" 10 100 3 \
+"Nv" "Pilote libre nvidia" off \
+"Nvidia" "Driver proprietaire Nvidia (legacy, special legacy ou unifie, selon votre carte...)" off 2>/tmp/menu.tmp.$$
+CHOICE=$(cat /tmp/menu.tmp.$$ | sed 's/\"//g')
+
+rm /tmp/menu.tmp.$$
+
+case $CHOICE in
+	Nv)
+		DRIVER="nv"
+		GENXORG
+	;;
+	Nvidia)
+		## prend l id de la carte
+		cardid=$(lspci -nn | grep VGA | grep -v NVidia | sed 's/.*\[.*://;s/].*//')
+		pci="0x$cardid"
+
+		# The driver ids:
+		
+		v190="$(cat /opt/reserve/190.x)"
+		v185="$(cat /opt/reserve/185.x)"
+		v173="$(cat /opt/reserve/173.14.x)"
+		v96="$(cat /opt/reserve/96.43.x)"
+		v71="$(cat /opt/reserve/71.86.x)"
+
+		#test quel driver nvidia utiliser
+		cd /opt/reserve
+		
+		if [[ $(echo -e "$v190" | grep "$pci") && $DIST_VERSION == "karmic" ]]; then
+				echo -e "Installation du pilote v190.53..."
+				RUN="190.53"
+		elif [[ $(echo -e "$v185" | grep "$pci") ]]; then
+			if [[ $DIST_VERSION = "karmic" ]];then
+				echo -e "Installation du pilote v185.18.36..."
+				LISTED="nvidia-185-libvdpau* nvidia-185-kernel-source* nvidia-glx-185* nvidia-settings*"
+			elif [[ $DIST_VERSION = "jaunty" ]];then
+				echo -e "Installation du pilote v180.44..."
+				LISTED="nvidia-180-libvdpau* nvidia-180-kernel-source* nvidia-glx-180* nvidia-settings*"
+			elif [[ $DIST_VERSION = "intrepid" ]];then
+				echo -e "Installation du pilote v180.11..."
+				LISTED="nvidia-180-kernel-source* nvidia-glx-180* nvidia-settings*"
+			elif [[ $DIST_VERSION = "hardy" ]];then
+				## A confirmer si compatible (pas trouve 180.11 en .run) ##
+				echo -e "Installation du pilote v180.22..."
+				RUN="180.22"
+			fi
+		elif [[ $(echo -e "$v173" | grep "$pci") ]]; then
+			echo -e "Installation du pilote v173.14..."
+			if [[ $DIST_VERSION = "intrepid" || $DIST_VERSION = "jaunty" || $DIST_VERSION = "karmic" ]];then
+				LISTED="nvidia-173-kernel-source* nvidia-glx-173* nvidia-settings*"
+			elif [[ $DIST_VERSION = "hardy" ]];then
+				LISTED="nvidia-new-kernel-source* nvidia-glx-new* nvidia-settings*"
+			fi
+		elif [[ $(echo -e "$v96" | grep "$pci") ]]; then
+			#special legacy
+			echo -e "Installation du pilote v96.43..."
+			if [[ $DIST_VERSION = "intrepid" || $DIST_VERSION = "jaunty" || $DIST_VERSION = "karmic" ]];then
+				LISTED="nvidia-96-kernel-source* nvidia-glx-96* nvidia-settings*"
+			elif [[ $DIST_VERSION = "hardy" ]];then
+				LISTED="nvidia-kernel-source* nvidia-glx* nvidia-settings*"
+			fi
+		elif [[ $(echo -e "$v71" | grep "$pci") ]]; then
+			#legacy
+			echo -e "Installation du pilote v71.86..."
+			if [[ $DIST_VERSION = "karmic" ]];then
+				## A confirmer si compatible ##
+				RUN="71.86.04"
+			elif [[ $DIST_VERSION = "intrepid" || $DIST_VERSION = "jaunty" ]];then
+				LISTED="nvidia-71-kernel-source* nvidia-glx-71* nvidia-settings*"
+			elif [[ $DIST_VERSION = "hardy" ]];then
+				LISTED="nvidia-legacy-kernel-source* nvidia-glx-legacy* nvidia-settings*"
+			fi
+		else 	
+			echo -e "Erreur lors de la detection du modele de la carte graphique Nvidia..."
+			echo -e "Utilisation du pilote libre..."
+			DRIVER="nv"
+			GENXORG
+			exit 1
+		fi
+
+		if [[ $LISTED ]]; then
+			AUTORMRUN
+			dpkg -i $LISTED
+			sleep 2
+		#configure xorg
+		nvidia-xconfig -d 24 --enable-all-gpus --keyboard=$(grep "XKBLAYOUT=" /etc/default/console-setup | cut -d\" -f2) --keyboard-driver=keyboard --force-generate --logo --randr-rotation --silent --add-argb-glx-visuals
+		modprobe nvidia
+		elif [[ $RUN ]]; then
+			AUTORMRUN
+			sudo apt-get remove --purge nvidia*
+			sh NVIDIA-Linux-$ARCHI-$RUN-$pkg.run -x
+			cd NVIDIA-Linux-$ARCHI-$RUN-$pkg
+			./nvidia-installer -s -N -X --no-x-check
+		else
+			echo -e "Distribution non supportee, sortie"
+			exit 1
+		fi
+		echo -e "Pilote installe"
+	;;
+	*)
+		## config par defaut
+		DRIVER="nv"
+		GENXORG
+	;;
+esac
+
+
+elif [ "$ATI" ]; then
+
+	echo -e "Carte Ati detecte, configuration basique de Xorg..."
+	AUTORMRUN
+	DRIVER="vesa"
+	GENXORG
+
+elif [ "$INTEL" ]; then
+
+	echo -e "Carte Intel detecte, demarrage de la configuration..."
+	AUTORMRUN
+	DRIVER="intel"
+	## recree xorg.conf
+	GENXORG
+
+else # ni nvida ni ati ni intel...
+	echo -e "Carte inconnue, configuration basique de Xorg"
+	AUTORMRUN
+	DRIVER="vesa"
+	GENXORG
+
+fi
+#rm -R /opt/reserve
+
+;; ## fin case start)
+esac
+
+exit 0
+

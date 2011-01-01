@@ -1,0 +1,50 @@
+packages="
+# Gnome minimal packages
+################
+kde-minimal
+
+# display manager
+################
+kdm
+#slim
+
+# Browser
+#########################
+#chromium-browser
+#chromium-codecs-ffmpeg-extra
+#chromium-browser-l10n
+#firefox
+
+# APT
+#############
+aptitude
+
+
+# BOOT
+#############
+#grub-pc
+
+# SYSTEM
+##############
+ntfs-3g
+ntfs-config
+scrounge-ntfs
+
+# DOCS and locales
+############
+language-pack-kde-$lang
+language-support-$lang
+kde-l10n-$lang
+
+# KERNEL
+#############
+linux-generic
+linux-image-generic
+linux-headers-generic
+ubuntu-restricted-extras
+
+# X-server
+#############
+x-window-system-core
+
+"
