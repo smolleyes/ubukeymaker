@@ -209,7 +209,7 @@ function INITCHROOT()
 chrootKerVer=$(ls -al /initrd.img | sed 's/.*boot\/initrd.img-//')
 localKerVer=$(cat /etc/ubukey/ubukeyconf | grep -e "Kernel" | sed 's/.*Kernel=//')
 sessionType=$(cat /etc/ubukey/ubukeyconf | grep -e "distSession" | sed 's/.*distSession=//')
-user=$(cat /etc/ubukey/ubukeyconf | grep -e "user" | sed 's/.*user=//')
+USER=$(cat /etc/ubukey/ubukeyconf | grep -e "user" | sed 's/.*user=//')
 chuser=$(cat /etc/casper.conf | grep -w "USERNAME=" | sed 's/.*=//' | sed 's/"//g')
 LOCALUTF="$(cat /etc/ubukey/ubukeyconf | grep -e "localutf" | sed 's/.*=//')"
 LOCALBASE="$(cat /etc/ubukey/ubukeyconf | grep -e "localbase" | sed 's/.*=//')"
