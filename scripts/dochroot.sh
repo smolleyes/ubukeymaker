@@ -171,6 +171,9 @@ cp -R -f /etc/fstab "${DISTDIR}"/chroot/etc/ &>/dev/null
 chmod +x "${DISTDIR}"/chroot/usr/local/bin/* -R &>/dev/null
 chmod +x "${DISTDIR}"/chroot/usr/share/ubukey/addons/* -R &>/dev/null
 
+## clean dpkg
+> "${DISTDIR}"/chroot/var/lib/dpkg/statoverride
+
 }
 
 ##########################################################
@@ -233,7 +236,7 @@ message "
 #########################
 
 Type de session : "$sessionType"
-Utilisateur session chroot : "$user"
+Utilisateur session chroot : "$USER"
 Utilisateur reel du live-cd : "$chuser"
 Locales : $LOCALUTF
 Langue : $LOCALSIMPLE
@@ -292,18 +295,19 @@ function CHROOTGRAPHIQUE()
 
 ## au cas ou
 rm /etc/skel/skel &>/dev/null
-rm /home/"$user" -R &>/dev/null
-ln -sf /etc/skel /home/"$user"
+rm /home/"$USER" -R &>/dev/null
+ln -sf /etc/skel /home/"$USER"
 cd /etc/skel
+
 
 ## create user and sudo
 if [ ! -e '/usr/bin/sudo' ]; then
 apt-get install -f --force-yes sudo
 fi
-useradd -s /bin/bash -M "$user"
+useradd -s /bin/bash -M "$USER"
 ## check user creation
-if [[ ! `cat /etc/passwd | grep -e "^$user:"` ]]; then
-message "Impossible de creer l utilisateur $user, sortie \n"
+if [[ ! `cat /etc/passwd | grep -e "^$USER:"` ]]; then
+message "Impossible de creer l utilisateur $USER, sortie \n"
 CLEANCHROOT
 exit 0
 fi
@@ -312,10 +316,10 @@ if [[ ! `cat /etc/group | grep -e "^sudo:"` ]]; then
 groupadd sudo
 fi
 sed -i 's/%sudo.*/%sudo ALL=NOPASSWD: ALL/' /etc/sudoers
-adduser "$user" sudo
+adduser "$USER" sudo
 
 ## clean xdg
-rm /home/"$user"/.config/user-dirs.dirs &>/dev/null
+rm /home/"$USER"/.config/user-dirs.dirs &>/dev/null
 rm /etc/locale.gen &>/dev/null
 echo -e "$LOCALSIMPLE
 $LOCALBASE
@@ -323,8 +327,8 @@ $LOCALUTF
 " | tee /etc/locale.gen &>/dev/null
 
 chmod 777 /dev/shm
-chown -hR "$user":"$user" /etc/skel
-export HOME="/home/$user"
+chown -hR "$USER":"$USER" /etc/skel
+export HOME="/home/$USER"
 
 if [ "$sessionType" != "console" ]; then
 
@@ -334,20 +338,20 @@ if [[ ! `dpkg -l | grep -e "xdg-user-dirs"` ]]; then
 aptitude -y install xdg-user-dirs
 fi
 
-sudo -u "$user" xdg-user-dirs-update 
-sudo -u "$user" xdg-user-dirs-update --force
+sudo -u "$USER" xdg-user-dirs-update 
+sudo -u "$USER" xdg-user-dirs-update --force
 
 ## reverifie le users-dirs.dirs
-deskdir="$(cat /home/"$user"/.config/user-dirs.dirs | grep DESKTOP | sed 's/.*\///' | sed 's/\"//')"
+deskdir="$(cat /home/"$USER"/.config/user-dirs.dirs | grep DESKTOP | sed 's/.*\///' | sed 's/\"//')"
 if [ -z "$deskdir" ]; then
 mkdir /etc/skel/Desktop
 deskdir="Desktop"
 fi
 
 ## check dossier bureau
-if [[ ! `cat /home/"$user"/.config/user-dirs.dirs | grep -e "/Desktop"` && -e /etc/skel/Desktop ]]; then
+if [[ ! `cat /home/"$USER"/.config/user-dirs.dirs | grep -e "/Desktop"` && -e /etc/skel/Desktop ]]; then
 rm -R /etc/skel/Desktop
-deskdir="$(cat /home/"$user"/.config/user-dirs.dirs | grep DESKTOP | sed 's/.*\///' | sed 's/\"//')"
+deskdir="$(cat /home/"$USER"/.config/user-dirs.dirs | grep DESKTOP | sed 's/.*\///' | sed 's/\"//')"
 ## au cas ou...
 mkdir /etc/skel/$deskdir &>/dev/null
 fi
@@ -367,7 +371,7 @@ sed -i 's/Desktop/'$deskdir'/g' /usr/share/initramfs-tools/scripts/casper-bottom
 fi
 
 ## share dir
-ln -s /media/pc-local /home/"$user"/"$deskdir"/Shared_Folder
+ln -s /media/pc-local /home/"$USER"/"$deskdir"/Shared_Folder
 
 if [ ! -e /usr/share/pixmaps/usbkey.png ]; then
 cp /usr/share/ubukey/images/usbkey.png /usr/share/pixmaps/
@@ -410,8 +414,8 @@ fi ## fin si console debootstrap
 case $sessionType in
 gnome)
 gconftool-2 -t boolean -s /apps/nautilus/desktop/volumes_visible false
-sudo -u "$user" gconftool-2 --type bool --set /apps/gnome-screensaver/idle_activation_enabled false
-sudo -u "$user" gconftool-2 --type bool --set /apps/gnome-screensaver/lock_enabled false
+sudo -u "$USER" gconftool-2 --type bool --set /apps/gnome-screensaver/idle_activation_enabled false
+sudo -u "$USER" gconftool-2 --type bool --set /apps/gnome-screensaver/lock_enabled false
 ;;
 kde4)
 message "Kde4 detecte... verification de zenity, kdm et de l utilisateur chroot\n"
@@ -441,12 +445,12 @@ fi
 
 message "Reverifie l integritee du dossier /etc/skel (peut etre long...) \n"
 chuser=$(cat /etc/casper.conf | grep -w "USERNAME=" | sed 's/.*=//' | sed 's/"//g')
-if [[ "$user" != "$chuser" ]]; then
+if [[ "$USER" != "$chuser" ]]; then
 LISTE="`find /etc/skel/ -type f | sed '/.thumbnails/d;/.cache/d;/.purple/d;/.icons/d;/.emerald/d;/.mozilla/d;/.dbus/d;/.themes/d;/.png/d;/.jpeg/d;/.jpg/d;/.bin/d;/find/d'`"
 echo -e "$LISTE" | while read file; do 
 
 if [[ -e "$file" && `cat "$file" | grep -e "$chuser"` ]]; then 
-sed -i "s%=$chuser%=$user%g;s%\/home\/$chuser%\/home\/$user%g" "$file"
+sed -i "s%=$chuser%=$USER%g;s%\/home\/$chuser%\/home\/$USER%g" "$file"
 fi
 
 done
@@ -476,11 +480,11 @@ xauth generate :5 .
 message "Tout est pret, demarre X dans le chroot ! \n"
 
 message "starter = $starter"
-chown -hR "$user":"$user" /etc/skel
+chown -hR "$USER":"$USER" /etc/skel
 
 echo '#!/bin/bash
 export DISPLAY=:5
-sudo -u '$user' '$starter'
+sudo -u '$USER' '$starter'
 ' | tee /usr/local/bin/startchroot &>/dev/null
 chmod +x /usr/local/bin/startchroot
 
@@ -520,11 +524,11 @@ fi ## fin si kde4
 
 message "Reverifie l integritee du dossier /etc/skel (peut etre long...) \n"
 chuser=$(cat /etc/casper.conf | grep -w "USERNAME=" | sed 's/.*=//' | sed 's/"//g')
-if [[ "$chuser" != "$user" ]]; then
+if [[ "$chuser" != "$USER" ]]; then
 LISTE="`find /etc/skel -type f | sed '/.thumbnails/d;/.cache/d;/.purple/d;/.icons/d;/.emerald/d;/.mozilla/d;/.dbus/d;/.themes/d;/.png/d;/.jpeg/d;/.jpg/d;/.bin/d;/find/d'`"
 echo -e "$LISTE" | while read file; do 
-if [[ -e "$file" && `cat "$file" | grep -e "$user"` ]]; then 
-sed -i "s%=$user%=$chuser%g;s%\/home\/$user%\/home\/$chuser%g" "$file"
+if [[ -e "$file" && `cat "$file" | grep -e "$USER"` ]]; then 
+sed -i "s%=$USER%=$chuser%g;s%\/home\/$USER%\/home\/$chuser%g" "$file"
 fi
 done
 fi
@@ -543,11 +547,19 @@ fi
 
 ## remet user root
 #sed -i 's/\/home\/.*:/\/root:/' chroot/etc/passwd
-sudo chown -R root:root /etc/skel
+chown -R root:root /etc/skel
 ## maj kernel et/ou verification
 message "Verifie l'integritee des fichiers vmlinuz/initrd \n"
 INIT=$(ls -al /initrd.img | sed 's/.*boot\///')
 VMLINUZ=$(ls -al /vmlinuz | sed 's/.*boot\///')
+
+## maj initiale au cas ou 
+if [ ! -e "/vmlinuz" ]; then
+message "mise a jour des sources..."
+apt-get update
+message "\nReinstallation du kernel, patience svp...\n"
+apt-get -y --force-yes install --reinstall linux-headers-generic linux-generic
+fi
 
 ## clean en cas de mise a jour du kernel important !!
 if [ -e "/vmlinuz.old" ]; then
@@ -587,7 +599,7 @@ dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null
 ## remet a jour les sources....
 
 ## clean group and passwd files
-deluser "$user"
+deluser "$USER"
 message "Verifie l integritee des fichiers passwd/groups et shadow \n"
 sed -i '/^[^:]*:[^:]*:[1-9][0-9][0-9][0-9]:/d' /etc/passwd
 sed -i '/^[^:]*:[^:]*:[12][0-9][0-9][0-9][0-9]:/d' /etc/passwd
@@ -595,13 +607,13 @@ sed -i '/^[^:]*:[^:]*:[12][0-9][0-9][0-9][0-9]:/d' /etc/passwd
 sed -i '/^[^:]*:[^:]*:[1-9][0-9][0-9][0-9]:/d' /etc/group
 sed -i '/^[^:]*:[^:]*:[12][0-9][0-9][0-9][0-9]:/d' /etc/group
 
-sed -i '/^[^:]*:[^:]*:[^:]*:'$user'/d' /etc/group
-sed -i '/'$user'/d' /etc/shadow- &>/dev/null
-sed -i '/'$user'/d' /etc/gshadow- &>/dev/null
-sed -i '/'$user'/d' /etc/gshadow &>/dev/null
-sed -i '/'$user'/d' /etc/shadow &>/dev/null
-sed -i '/'$user'/d' /etc/group &>/dev/null
-sed -i '/'$user'/d' /etc/passwd &>/dev/null
+sed -i '/^[^:]*:[^:]*:[^:]*:'$USER'/d' /etc/group
+sed -i '/'$USER'/d' /etc/shadow- &>/dev/null
+sed -i '/'$USER'/d' /etc/gshadow- &>/dev/null
+sed -i '/'$USER'/d' /etc/gshadow &>/dev/null
+sed -i '/'$USER'/d' /etc/shadow &>/dev/null
+sed -i '/'$USER'/d' /etc/group &>/dev/null
+sed -i '/'$USER'/d' /etc/passwd &>/dev/null
 
 ## recreate shadow/gshadow files and permissions
 pwconv
@@ -616,7 +628,7 @@ rm -rf /etc/skel/.gvfs &>/dev/null
 
 message "nettoyage des fichiers de l utilisateur temporaire du chroot\n"
 ## efface utilisateur
-rm /home/"$user"/"$deskdir"/Shared_Folder
+rm /home/"$USER"/"$deskdir"/Shared_Folder
 rm /etc/xdg/autostart/fix-clavier.desktop &>/dev/null
 rm /etc/skel/.config/autostart/fix-clavier.desktop &>/dev/null
 rm /etc/skel/.xsession-errors &>/dev/null
@@ -626,7 +638,7 @@ rm /usr/local/bin/quit-chroot.sh &>/dev/null
 rm /etc/skel/.ICEauthority &>/dev/null
 rm -R /etc/skel/.gvfs &>/dev/null
 rm -Rf /var/tmp/*  &>/dev/null 
-rm -Rf /home/"$user"  &>/dev/null
+rm -Rf /home/"$USER"  &>/dev/null
 
 rm /etc/hosts  &>/dev/null
 rm /etc/resolv.conf  &>/dev/null
@@ -641,9 +653,9 @@ rm -R -f /root/* &>/dev/null
 
 message "Démarrage du chroot en mode $mode ! \n"
 INITCHROOT
-ln -sf /etc/skel/ /home/"$user"
+ln -sf /etc/skel/ /home/"$USER"
 rm /etc/skel/skel
-cd /home/"$user"
+cd /home/"$USER"
 export DISPLAY=localhost:5
 #/usr/share/ubukey/scripts/ubusrc-gen
 apt-get update
@@ -698,18 +710,18 @@ umount -l -f "${DISTDIR}"/chroot/proc &>/dev/null
 umount -l -f "${DISTDIR}"/chroot/sys &>/dev/null
 fi
 
-message "Verifie l integritee des fichiers passwd/groups et shadow \n"
+echo -e "Verifie l integritee des fichiers passwd/groups et shadow \n"
 sed -i '/^[^:]*:[^:]*:[1-9][0-9][0-9][0-9]:/d' "${DISTDIR}"/chroot/etc/passwd &>/dev/null
 sed -i '/^[^:]*:[^:]*:[12][0-9][0-9][0-9][0-9]:/d' "${DISTDIR}"/chroot/etc/passwd &>/dev/null
 sed -i '/^[^:]*:[^:]*:[1-9][0-9][0-9][0-9]:/d' "${DISTDIR}"/chroot/etc/group &>/dev/null
 sed -i '/^[^:]*:[^:]*:[12][0-9][0-9][0-9][0-9]:/d' "${DISTDIR}"/chroot/etc/group &>/dev/null
-sed -i '/^[^:]*:[^:]*:[^:]*:'$user'/d' "${DISTDIR}"/chroot/etc/group &>/dev/null
-sed -i '/'$user'/d' "${DISTDIR}"/chroot/etc/shadow- &>/dev/null
-sed -i '/'$user'/d' "${DISTDIR}"/chroot/etc/gshadow- &>/dev/null
-sed -i '/'$user'/d' "${DISTDIR}"/chroot/etc/gshadow &>/dev/null
-sed -i '/'$user'/d' "${DISTDIR}"/chroot/etc/shadow &>/dev/null
-sed -i '/'$user'/d' "${DISTDIR}"/chroot/etc/group &>/dev/null
-sed -i '/'$user'/d' "${DISTDIR}"/chroot/etc/passwd &>/dev/null
+sed -i '/^[^:]*:[^:]*:[^:]*:'$USER'/d' "${DISTDIR}"/chroot/etc/group &>/dev/null
+sed -i '/'$USER'/d' "${DISTDIR}"/chroot/etc/shadow- &>/dev/null
+sed -i '/'$USER'/d' "${DISTDIR}"/chroot/etc/gshadow- &>/dev/null
+sed -i '/'$USER'/d' "${DISTDIR}"/chroot/etc/gshadow &>/dev/null
+sed -i '/'$USER'/d' "${DISTDIR}"/chroot/etc/shadow &>/dev/null
+sed -i '/'$USER'/d' "${DISTDIR}"/chroot/etc/group &>/dev/null
+sed -i '/'$USER'/d' "${DISTDIR}"/chroot/etc/passwd &>/dev/null
 
 
 umount -f "${DISTDIR}"/chroot &>/dev/null

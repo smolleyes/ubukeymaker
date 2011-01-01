@@ -35,7 +35,7 @@ def checkConf():
     ## load config and verify main distrib dir
     main_dist_path,dist_list = scan_dist_path()
     if not os.access(main_dist_path, os.R_OK):
-        error_dialog("Votre dossier de distributions :\n%s \nn'est pas accessible, pas monté ou supprimé..." % main_dist_path)
+        error_dialog("Votre dossier de distributions :\n%s \nn'est pas accessible, pas monté ou supprimé (recréez le)..." % main_dist_path)
         sys.exit()
         
     ## LOGS
