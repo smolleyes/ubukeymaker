@@ -121,7 +121,7 @@ touch "$DISTDIR"/chroot/tmp/chrootlog.log &>/dev/null
 (tail -f "$DISTDIR"/chroot/tmp/chrootlog.log &) 2>/dev/null
 
 echo -e "Entre dans le chroot pour préparer votre système avec la langue \"$LOCALSIMPLE\""
-chroot "$DISTDIR"/chroot &>/dev/null << "EOF"
+chroot "$DISTDIR"/chroot << "EOF"
 user=$(cat /etc/ubukey/ubukeyconf | grep -e "user" | sed 's/.*user=//')
 ## demarre script localisation
 /bin/bash /usr/share/ubukey/scripts/localiser.sh | tee -a /tmp/chrootlog.log
@@ -458,7 +458,7 @@ fi ## fin check taille copie config
 Language)
 
 echo -e "Entre dans le chroot pour préparer votre système avec la langue \"$LOCALSIMPLE\""
-chroot "$DISTDIR"/chroot &> /dev/null << "EOF"
+chroot "$DISTDIR"/chroot << "EOF"
 user=$(cat /etc/ubukey/ubukeyconf | grep -e "user" | sed 's/.*user=//')
 ## demarre script localisation
 if [ ! -e "/usr/bin/locate" ]; then
@@ -582,7 +582,7 @@ touch "$DISTDIR"/chroot/tmp/chrootlog.log &>/dev/null
 (tail -f "$DISTDIR"/chroot/tmp/chrootlog.log &) 2>/dev/null
 
 echo -e "Entre dans le chroot pour préparer votre système avec la langue \"$LOCALSIMPLE\""
-chroot "$DISTDIR"/chroot &>/dev/null << "EOF"
+chroot "$DISTDIR"/chroot << "EOF"
 
 ## mise a jour forcee du script
 /bin/bash /usr/share/ubukey/scripts/localiser-kde.sh | tee -a /tmp/chrootlog.log
@@ -742,7 +742,7 @@ touch "$DISTDIR"/chroot/tmp/chrootlog.log &>/dev/null
 (tail -f "$DISTDIR"/chroot/tmp/chrootlog.log &) 2>/dev/null
 
 echo -e "Entre dans le chroot pour préparer votre système avec la langue \"$LOCALSIMPLE\""
-chroot "$DISTDIR"/chroot &>/dev/null << "EOF"
+chroot "$DISTDIR"/chroot << "EOF"
 
 ## demarre script localisation
 /bin/bash /usr/share/ubukey/scripts/localiser-kde.sh | tee -a /tmp/chrootlog.log
