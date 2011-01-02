@@ -456,15 +456,14 @@ fi ## fin check taille copie config
 ;;
 
 Language)
-rm "$DISTDIR"/chroot/tmp/localise.log &>/dev/null
-touch "$DISTDIR"/chroot/tmp/localise.log &>/dev/null
-
-(tail -f "$DISTDIR"/chroot/tmp/localise.log &) 2>/dev/null
 
 echo -e "Entre dans le chroot pour préparer votre système avec la langue \"$LOCALSIMPLE\""
-chroot "$DISTDIR"/chroot << "EOF"
+chroot "$DISTDIR"/chroot &> /dev/null << "EOF"
 user=$(cat /etc/ubukey/ubukeyconf | grep -e "user" | sed 's/.*user=//')
 ## demarre script localisation
+if [ ! -e "/usr/bin/locate" ]; then
+apt-get -y install locate
+fi
 /bin/bash /usr/share/ubukey/scripts/localiser.sh | tee -a /tmp/chrootlog.log
 EOF
 ;;
