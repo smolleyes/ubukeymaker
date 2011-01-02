@@ -160,7 +160,7 @@ zenity --info --text "l'image $splash_image est maintenant mise en place"
 if [[ ! `ls /media/custom-usb/ | grep -e "splash"` ]]; then
 cd "${DISTDIR}"/temp
 testConnect
-wget --quiet http://scripts.penguincape.org/ubukey/images/splash.jpg
+wget --quiet http://www.penguincape.org/downloads/scripts/ubukey/images/splash.jpg
 cp splash.jpg /media/custom-usb/ &>/dev/null
 sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.jpg/' /media/custom-usb/boot/extlinux.conf 
 fi
@@ -192,9 +192,9 @@ function syslinux_build()
 
 ## check syslinux special pour le script
 if [ "$X64" == "true" ]; then
-	SYSLINUXURL="http://scripts.penguincape.org/ubukey/syslinux/syslinux-4.00_pre43-1_amd64.deb"
+	SYSLINUXURL="http://www.penguincape.org/downloads/scripts/ubukey/deb/syslinux-4.00_pre43-1_amd64.deb"
 else
-	SYSLINUXURL="http://scripts.penguincape.org/ubukey/syslinux/syslinux-4.00_pre47-1_i386.deb"
+	SYSLINUXURL="http://www.penguincape.org/downloads/scripts/ubukey/deb/syslinux-4.00_pre47-1_i386.deb"
 fi
 syslinux_ver="pre47-1"
 	
@@ -234,7 +234,7 @@ bootdir="${DISTDIR}/usb/boot"
 echo -e "Préparation du dossier boot pour usb \n" 
 mkdir -p "$bootdir" &>/dev/null
 if [ ! -e "$bootdir/extlinux.conf" ]; then
-	wget --quiet http://scripts.penguincape.org/ubukey/extlinux.conf -O "$bootdir/extlinux.conf"
+	cp -f /usr/share/ubukey/conf_files/extlinux.conf -O "$bootdir/"
 fi
 
 if [ "$X64" == "true" ]; then	
@@ -1042,7 +1042,7 @@ echo  "Prepare la partition /dev/"$usbdev"1, taille : "$PART1_SIZE" MB"
 PART=/dev/$usbdev
 #if [ ! -e "/usr/local/bin/sizer" ]; then
 #	cd /usr/local/bin
-#	wget http://scripts.penguincape.org/ubukey/launchers/sizer &>/dev/null
+#	wget http://www.penguincape.org/downloads/scripts/ubukey/launchers/sizer &>/dev/null
 #	chmod +x sizer
 #fi
 

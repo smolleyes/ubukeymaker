@@ -269,15 +269,13 @@ fi ##fin check elements theme actif
 echo -e "\nCopie de vos dossiers de configuration terminée \n"
 sleep 5
 
->"$DISTDIR"/chroot/tmp/chrootlog.log &>/dev/null
-(tail -f "$DISTDIR"/chroot/tmp/chrootlog.log &) 2>/dev/null
-chroot "$DISTDIR"/chroot &>/dev/null << "EOF"
+chroot "$DISTDIR"/chroot << "EOF"
 
 function message()
 {
 touch /tmp/chrootlog.log
 message="$1"
-echo -e "$message" | tee -a /tmp/chrootlog.log &>/dev/null
+echo -e "$message"
 }
 
 ## maj distro
@@ -300,7 +298,7 @@ EOF
 killall -9 tail
 
 ## liste des paquets dans le chroot
-chroot "$DISTDIR"/chroot &>/dev/null << "EOF"
+chroot "$DISTDIR"/chroot << "EOF"
 dpkg -l |grep ^rc |awk '{print $2}' | xargs dpkg -P &>/dev/null 
 dpkg-query -W --showformat='${Package}\n' | sed '/^$/d' | sort > /tmp/chrootlist
 exit
@@ -314,9 +312,7 @@ dpkg-query -W --showformat='${Package}\n' | sed '/^$/d' | sort > /tmp/locallist
 ORIGLIST="$(diff -y /tmp/locallist ${DISTDIR}/chroot/tmp/chrootlist | grep "<" | awk '{print $1}' | sed 's/nvidia.*//;s/xorg-driver-fglrx.*//;s/fglrx.*//;/.*-dev/d;/adobe/d;/.wine/d' | sed '/^$/d')"
 
 echo "$ORIGLIST" | tee "$DISTDIR"/chroot/tmp/pkglist &>/dev/null
->"$DISTDIR"/chroot/tmp/chrootlog.log &>/dev/null
-(tail -f "$DISTDIR"/chroot/tmp/chrootlog.log &) 2>/dev/null
-chroot "$DISTDIR"/chroot &>/dev/null << "EOF"
+chroot "$DISTDIR"/chroot << "EOF"
 
 function message()
 {
@@ -411,7 +407,7 @@ else
 	## injecte liste des paquets non installés dans chroot
 	echo -e "Entre dans le chroot \n"
 	
-chroot "$DISTDIR"/chroot &>/dev/null << "EOF"
+chroot "$DISTDIR"/chroot << "EOF"
 mount -t proc proc /proc
 mount -t sysfs sys /sys
 mount -t devpts none /dev/pts
@@ -466,7 +462,7 @@ touch "$DISTDIR"/chroot/tmp/localise.log &>/dev/null
 (tail -f "$DISTDIR"/chroot/tmp/localise.log &) 2>/dev/null
 
 echo -e "Entre dans le chroot pour préparer votre système avec la langue \"$LOCALSIMPLE\""
-chroot "$DISTDIR"/chroot &>/dev/null << "EOF"
+chroot "$DISTDIR"/chroot << "EOF"
 user=$(cat /etc/ubukey/ubukeyconf | grep -e "user" | sed 's/.*user=//')
 ## demarre script localisation
 /bin/bash /usr/share/ubukey/scripts/localiser.sh | tee -a /tmp/chrootlog.log
