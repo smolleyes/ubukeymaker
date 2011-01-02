@@ -646,7 +646,7 @@ rm /etc/X11/xorg.conf  &>/dev/null
 
 ## sortie du script et demonte tout
 rm -R -f /var/crash/* &>/dev/null
-rm -R -f /tmp/* &>/dev/null
+rm -R -f /tmp/.* &>/dev/null
 rm -R -f /root/* &>/dev/null
 
 }
