@@ -4,6 +4,12 @@ DISTDIR=$1
 USER=$2
 CURDIST=`lsb_release -cs`
 
+if [ -e "/usr/share/ubukey" ]; then 
+UBUKEYDIR="/usr/share/ubukey"
+elif [ -e "/usr/local/share/ubukey" ]; then
+UBUKEYDIR="/usr/local/share/ubukey"
+fi
+
 if [[ "`uname -m`" == "x86_64" ]]; then
 	X64="true"
 fi
@@ -33,7 +39,7 @@ if [ ! -e "${DISTDIR}"/chroot/usr/share/ubukey ]; then
 mkdir "${DISTDIR}"/chroot/usr/share/ubukey
 fi
 
-rsync -uravH --delete --exclude ".git" --exclude "~" /usr/share/ubukey/ "${DISTDIR}"/chroot/usr/share/ubukey/
+rsync -uravH --delete --exclude ".git" --exclude "~" $UBUKEYDIR/ "${DISTDIR}"/chroot/usr/share/ubukey
 chmod +x "${DISTDIR}"/chroot/usr/share/ubukey/scripts/*
 
 sessionType=$(grep -e "distSession" "${DISTDIR}"/config | sed 's/.*distSession=//')
@@ -110,7 +116,7 @@ ne sera proposée qu'au prochain démarrage du chroot (pas encore de .kde...)
 Cliquez \"Valider\" pour continuer
 "
 	else
-		. /usr/share/ubukey/scripts/themescan.sh
+		. $UBUKEYDIR/scripts/themescan.sh
 	fi
 fi ## fin check si mode console
 
@@ -155,7 +161,7 @@ function update_addons()
 if [ ! -e "${WORK}/addons" ]; then
 	mkdir "${WORK}/addons"
 fi
-cp -R -f /usr/share/ubukey/addons/{all,$CURDIST,custom} "${WORK}"/addons/ &>/dev/null
+cp -R -f $UBUKEYDIR/addons/{all,$CURDIST,custom} "${WORK}"/addons/ &>/dev/null
 
 echo -e "Copie les addons du script et vos addons perso pour votre distrib $sessionType \n"
 
@@ -169,7 +175,7 @@ mv "${DISTDIR}"/chroot/etc/fstab "${DISTDIR}"/chroot/etc/fstab-save
 mv "${DISTDIR}"/chroot/etc/mtab "${DISTDIR}"/chroot/etc/mtab-save
 cp -R -f /etc/fstab "${DISTDIR}"/chroot/etc/ &>/dev/null
 chmod +x "${DISTDIR}"/chroot/usr/local/bin/* -R &>/dev/null
-chmod +x "${DISTDIR}"/chroot/usr/share/ubukey/addons/* -R &>/dev/null
+chmod +x "${DISTDIR}"/chroot/$UBUKEYDIR/addons/* -R &>/dev/null
 
 ## clean dpkg
 > "${DISTDIR}"/chroot/var/lib/dpkg/statoverride
@@ -206,6 +212,10 @@ echo -e "$message" | tee -a /tmp/chrootlog.log &>/dev/null
 
 function INITCHROOT()
 {
+if [ ! -e "/usr/share/ubukey" ] ; then
+mkdir /usr/share/ubukey
+fi
+UBUKEYDIR="/usr/share/ubukey"
 chrootKerVer=$(ls -al /initrd.img | sed 's/.*boot\/initrd.img-//')
 localKerVer=$(cat /etc/ubukey/ubukeyconf | grep -e "Kernel" | sed 's/.*Kernel=//')
 sessionType=$(cat /etc/ubukey/ubukeyconf | grep -e "distSession" | sed 's/.*distSession=//')
@@ -255,7 +265,7 @@ umount -f /lib/modules/*/volatile &>/dev/null
 
 ## check sources
 message "Verification des sources, merci de patienter"
-/bin/bash /usr/share/ubukey/scripts/themescan.sh
+/bin/bash $UBUKEYDIR/scripts/themescan.sh
 
 ## Changement de la langue par defaut des consoles tty avec : $LOCALSIMPLE
 sed -i 's/XKBLAYOUT=.*/XKBLAYOUT="'$LOCALSIMPLE'"/' /etc/default/console-setup
@@ -374,7 +384,7 @@ fi
 ln -s /media/pc-local /home/"$USER"/"$deskdir"/Shared_Folder
 
 if [ ! -e /usr/share/pixmaps/usbkey.png ]; then
-cp /usr/share/ubukey/images/usbkey.png /usr/share/pixmaps/
+cp $UBUKEYDIR/images/usbkey.png /usr/share/pixmaps/
 fi
 
 ################## ajout icones sur le bureau
@@ -386,7 +396,7 @@ Name=Assistant de customisation $sessionType
 Name[fr_FR]=Assistant de customisation $sessionType
 Comment[fr_FR]=Assistant de customisation pour $sessionType
 Comment=Assistant de customisation pour $sessionType
-Exec=/usr/share/ubukey/scripts/ubukey-$sessionType.sh
+Exec=$UBUKEYDIR/scripts/ubukey-$sessionType.sh
 X-GNOME-Autostart-enabled=true
 Icon=/usr/share/pixmaps/usbkey.png" | tee /etc/skel/"$deskdir"/ubukey-assist.desktop &>/dev/null
 
@@ -404,7 +414,7 @@ Exec=setxkbmap $LOCALSIMPLE
 X-GNOME-Autostart-enabled=true" | tee /etc/xdg/autostart/fix-clavier.desktop &>/dev/null
 
 ## icone partage
-#cp -f /usr/share/ubukey/launchers/gc.desktop /etc/skel/"$deskdir"
+#cp -f $UBUKEYDIR/launchers/gc.desktop /etc/skel/"$deskdir"
 #chmod +x /etc/skel/"$deskdir"/gc.desktop
 
 fi ## fin si console debootstrap
@@ -467,7 +477,7 @@ fi
 #if [[ ! -e "/usr/bin/gnome-commander" || ! -e "/usr/share/pixmaps/share.png" ]]; then
 #message "Installation de gnome-commander pour le partage des disques entre local et chroot \nVotre pc local sera monté sur /media/pc-local"
 #apt-get -y --force-yes install gnome-commander &>/dev/null
-#cp /usr/share/ubukey/images/share.png /usr/share/pixmaps/
+#cp $UBUKEYDIR/images/share.png /usr/share/pixmaps/
 #fi
 #fi
 
@@ -657,7 +667,7 @@ ln -sf /etc/skel/ /home/"$USER"
 rm /etc/skel/skel
 cd /home/"$USER"
 export DISPLAY=localhost:5
-#/usr/share/ubukey/scripts/ubusrc-gen
+#$UBUKEYDIR/scripts/ubusrc-gen
 apt-get update
 if [ ! -e "/usr/bin/xterm" ]; then
 message "Installation de xterm \n"
@@ -680,6 +690,7 @@ sleep 3
 mv "${DISTDIR}"/chroot/etc/mtab-save "${DISTDIR}"/chroot/etc/mtab
 mv "${DISTDIR}"/chroot/etc/fstab-save "${DISTDIR}"/chroot/etc/fstab
 rm "${DISTDIR}"/chroot/var/lib/dbus/machine-id &>/dev/null
+rm -R "${DISTDIR}"/chroot/usr/share/ubukey &>/dev/null
 if [[ !  `grep -w "\/root" "${DISTDIR}"/chroot/etc/passwd` ]]; then
 echo -e "Probleme avec /etc/passwd..."
 sleep 5
@@ -699,7 +710,6 @@ umount -f "${DISTDIR}"/chroot/var/run/dbus &>/dev/null
 rm "${DISTDIR}"/chroot/var/run/* &>/dev/null
 umount -l -f ${DISTDIR}/chroot/media/pc-local/media &>/dev/null
 umount -l -f ${DISTDIR}/chroot/media/pc-local/home &>/dev/null
-rm 
 umount /dev/loop* -l -f &>/dev/null
 sed -i '/^>/d;/WARNING/d' "${DISTDIR}"/logs/chrootlog.log &>/dev/null
 

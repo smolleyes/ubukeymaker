@@ -1,3 +1,5 @@
+lang=$(env | grep -w "LANG" | sed -e 's/\..*//;s/LANG=//;s/_.*//')
+
 packages="
 # Gnome minimal packages
 ################
@@ -27,8 +29,13 @@ aptitude
 # SYSTEM
 ##############
 ntfs-3g
-ntfs-config
 scrounge-ntfs
+pciutils
+lsof
+nano
+## for live-cd
+casper
+lupin-casper
 
 # DOCS and locales
 ############

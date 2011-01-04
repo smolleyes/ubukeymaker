@@ -1,6 +1,12 @@
 #!/bin/bash
 ############################################### 
-cp -f /usr/share/ubukey/scripts/ubusrc-gen /usr/local/bin
+if [ -e "/usr/share/ubukey" ]; then 
+UBUKEYDIR="/usr/share/ubukey"
+elif [ -e "/usr/local/share/ubukey" ]; then
+UBUKEYDIR="/usr/local/share/ubukey"
+fi
+
+cp -f $UBUKEYDIR/scripts/ubusrc-gen /usr/local/bin
 chmod +x /usr/local/bin/ubusrc-gen
 bash ubusrc-gen
 if [[ ! `dpkg -l | grep aptitude` ]]; then

@@ -3,6 +3,12 @@
 WORK=$1
 USER=$2
 
+if [ -e "/usr/share/ubukey" ]; then 
+UBUKEYDIR="/usr/share/ubukey"
+elif [ -e "/usr/local/share/ubukey" ]; then
+UBUKEYDIR="/usr/local/share/ubukey"
+fi
+
 function create_dist()
 {
 
@@ -133,7 +139,7 @@ case $DISTCHOICE in
 	ISOTYPE="lxde"
 	;;
 	Custom)
-	/bin/bash /usr/share/ubukey/scripts/debootstrap_dist.sh "$WORK"
+	/bin/bash $UBUKEYDIR/scripts/debootstrap_dist.sh "$WORK"
 	exit 1
 	;;
 	

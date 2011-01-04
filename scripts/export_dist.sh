@@ -8,6 +8,12 @@ if [[ "`uname -m`" == "x86_64" ]]; then
 	X64="true"
 fi
 
+if [ -e "/usr/share/ubukey" ]; then 
+UBUKEYDIR="/usr/share/ubukey"
+elif [ -e "/usr/local/share/ubukey" ]; then
+UBUKEYDIR="/usr/local/share/ubukey"
+fi
+
 #############################
 ## Copies des fichiers necessaires sur la cle
 function COPIE()
@@ -234,7 +240,7 @@ bootdir="${DISTDIR}/usb/boot"
 echo -e "Préparation du dossier boot pour usb \n" 
 mkdir -p "$bootdir" &>/dev/null
 if [ ! -e "$bootdir/extlinux.conf" ]; then
-	cp -f /usr/share/ubukey/conf_files/extlinux.conf -O "$bootdir/"
+	cp -f $UBUKEYDIR/conf_files/extlinux.conf "$bootdir/"
 fi
 
 if [ "$X64" == "true" ]; then	
@@ -468,7 +474,7 @@ zenity --question --text "Voulez vous quitter ou verifier votre image avec Virtu
 Cliquez \"annuler\" pour quitter ou Valider pour démarrer Virtualbox..."
 case $? in
 	0)
-	/bin/bash /usr/share/ubukey/scripts/vbox.sh $DIST $DISTDIR $copyType
+	/bin/bash $UBUKEYDIR/scripts/vbox.sh $DIST $DISTDIR $copyType
 	;;
 	1)
 	noQemu=""

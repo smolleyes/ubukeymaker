@@ -1,9 +1,15 @@
+if [ -e "/usr/share/ubukey" ]; then 
+UBUKEYDIR="/usr/share/ubukey"
+elif [ -e "/usr/local/share/ubukey" ]; then
+UBUKEYDIR="/usr/local/share/ubukey"
+fi
+
 function install_packages()
 {
 session=$1
 echo -e "Installation des paquets pour $session \n"
 lang=$(env | grep -w "LANG" | sed -e 's/\..*//;s/LANG=//;s/_.*//')
-. /usr/share/ubukey/deboot-modules/$session
+. $UBUKEYDIR/deboot-modules/$session
 chroot "$DISTDIR"/chroot aptitude -y install --without-recommends `echo -e "$packages" | sed -e '/^#/d' | xargs`
 
 ## extra-packages (install with recommends)

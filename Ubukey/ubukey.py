@@ -12,10 +12,10 @@ from Xlib import X
 from subprocess import Popen, PIPE
 
 ## own import
-from loader import checkConf
+from lib.loader import checkConf
 from lib.terminal import VirtualTerminal
 from lib.distribs import Distribs
-from constants import *
+from lib.constants import *
 from lib.functions import get_dist_env
 
 class Ubukey_gui(object):
@@ -38,7 +38,7 @@ class Ubukey_gui(object):
         self.run_btn_state = "stopped"
         ## vbox btn
         self.vbox_img = self.gladexml.get_widget('vbox_img')
-        img = gtk.gdk.pixbuf_new_from_file_at_scale('/usr/share/ubukey/images/vbox.png', 24, 24, 1)
+        img = gtk.gdk.pixbuf_new_from_file_at_scale(os.path.join(data_path,'images/vbox.png'), 24, 24, 1)
         self.vbox_img.set_from_pixbuf(img)
         ## dist logo
         self.distlogo = self.gladexml.get_widget('distlogo_img')
@@ -88,6 +88,10 @@ class Ubukey_gui(object):
         
         ##  start gui widgets
         self.window.show_all()
+        self.load_distribs_xml()
+        self.start_Xephyr()
+        self.startVt()
+        gtk.main()
 
     def error_dialog(self,message, parent = None):
         """Displays an error message."""
@@ -117,7 +121,7 @@ class Ubukey_gui(object):
         self.selected_dist_path = self.dist_model.get_value(self.dist_iter, 1)
         session = get_dist_env(self.selected_dist,self.selected_dist_path)
         if session and not session == "":
-            img = "/usr/share/ubukey/images/logo_%s.png" % session
+            img = os.path.join(data_path,"images/logo_%s.png" % session)
             self.distlogo.set_from_file(img)
         
     def set_startdist_btn_state(self,widget):
@@ -158,12 +162,8 @@ class Ubukey_gui(object):
         gtk.main_quit()
         
     def pkg(self,widget):
-        self.vt.run_command('/bin/bash /usr/share/ubukey/scripts/dialog.sh')
+        self.vt.run_command('/bin/bash ' + data_path +'/scripts/dialog.sh')
         
 if __name__ == "__main__":
     checkConf()
     gui = Ubukey_gui()
-    gui.load_distribs_xml()
-    gui.start_Xephyr()
-    gui.startVt()
-    gtk.main()

@@ -3,7 +3,7 @@
 
 ## own import
 from constants import *
-from lib.functions import *
+from functions import *
 import os,gtk,sys,re
 
 def checkConf():

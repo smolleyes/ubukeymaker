@@ -9,7 +9,7 @@ sudo aptitude -y install zenity
 fi
 cd /usr/local/bin
 sudo rm /usr/local/bin/ubusrc-gen
-sudo wget http://scripts.penguincape.org/ubukey/ubusrc-gen
+sudo cp /usr/share/ubukey/scripts/ubusrc-gen /usr/local/bin/
 sudo chmod +x ubusrc-gen
 
 cd /usr/share/ubukey/scripts

@@ -3,6 +3,12 @@
 WORK="$1"
 CURDIST=`lsb_release -cs`
 
+if [ -e "/usr/share/ubukey" ]; then 
+UBUKEYDIR="/usr/share/ubukey"
+elif [ -e "/usr/local/share/ubukey" ]; then
+UBUKEYDIR="/usr/local/share/ubukey"
+fi
+
 function distName {
 choix=`zenity --width=350 --height=80 --title "Nom du projet" --text "Indiquez un nom pour votre projet 
 
@@ -44,7 +50,7 @@ debootstrap --keep-debootstrap-dir --arch i386 $CURDIST "$DISTDIR"/chroot http:/
 
 ## send ubukey scripts
 mkdir -p "${DISTDIR}"/chroot/usr/share/ubukey &>/dev/null
-rsync -uravH --delete --exclude="*~,*.git" /usr/share/ubukey/. "${DISTDIR}"/chroot/usr/share/ubukey/.
+rsync -uravH --delete --exclude="*~,*.git" $UBUKEYDIR/. "${DISTDIR}"/chroot/usr/share/ubukey/.
 
 ## install xterm and some essentials packages for the script
 echo -e "Installation de paquets essentiels au script \n"
@@ -67,7 +73,7 @@ chmod +x /usr/share/ubukey/scripts/ubusrc-gen
 EOF
 
 ## start modules manager
-. /usr/share/ubukey/scripts/debootstrap-packages.sh
+. $UBUKEYDIR/scripts/debootstrap-packages.sh
 
 ## clean chroot
 chroot "$DISTDIR"/chroot << EOF

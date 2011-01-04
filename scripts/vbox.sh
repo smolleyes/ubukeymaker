@@ -5,6 +5,12 @@ DISTDIR=$2
 installType=$3
 CURDIST=`lsb_release -cs`
 
+if [ -e "/usr/share/ubukey" ]; then 
+UBUKEYDIR="/usr/share/ubukey"
+elif [ -e "/usr/local/share/ubukey" ]; then
+UBUKEYDIR="/usr/local/share/ubukey"
+fi
+
 function chooseMedia() 
 {
 choix=`zenity --width=550 --height=250 --title "Virtualbox" --list --text "Testez votre distrib avec virtualbox ou passez..." --radiolist --column "Choix" --column "Action" --column "Description"  \
@@ -78,7 +84,7 @@ for i in `echo $installType`; do
 
 if [ "$i" == "usb" ]; then
 	if [ -z "$usbdev" ]; then
-		. /usr/share/ubukey/scripts/scankey.sh	
+		. $UBUKEYDIR/scripts/scankey.sh	
 	fi
 	
 	echo -e "genere les fichiers necessaires a virtualbox pour booter sur usb... \n"

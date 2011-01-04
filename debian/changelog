@@ -1,0 +1,5 @@
+ubukey (0.1-0ppa-2~maverick) maverick; urgency=low
+
+  * fix iso export
+
+ -- Laguillaumie sylvain <s.lagui@free.fr>  Tue, 04 Jan 2011 21:12:03 +0100

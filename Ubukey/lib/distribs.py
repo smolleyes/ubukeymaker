@@ -19,8 +19,8 @@ class Distribs(object):
             
     def start(self):
         self.chroot_script = os.path.join(scripts_path,'dochroot.sh')
-        crun = os.popen("ps aux | grep -e '/usr/share/ubukey/scripts/dochroot' | grep -v 'grep'").read().strip()
-        xrun = os.popen("ps aux | grep -e '/usr/share/ubukey/scripts/startchroot' | grep -v 'grep'").read().strip()
+        crun = os.popen("ps aux | grep -e "+scripts_path+'/dochroot'" | grep -v 'grep'").read().strip()
+        xrun = os.popen("ps aux | grep -e "+scripts_path+'/startchroot'" | grep -v 'grep'").read().strip()
         if not crun == '' or not xrun == '':
             print "a session is already running"
             return
@@ -32,7 +32,7 @@ class Distribs(object):
         self.gui.vt.run_command('gksu /bin/bash %s %s %s' % (self.chroot_script, self.gui.selected_dist_path, self.username))
         self.pid = os.popen("ps aux | grep -e 'dochroot' | grep -v 'grep'").read().strip()
         while 1:
-            t = os.popen("ps aux | grep -e 'bash /usr/share/ubukey/scripts/dochroot' | grep -v 'grep'").read().strip()
+            t = os.popen("ps aux | grep -e 'bash "+scripts_path+'/dochroot'" | grep -v 'grep'").read().strip()
             if not t == '':
                 time.sleep(5)
             else:
