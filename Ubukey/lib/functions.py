@@ -60,7 +60,10 @@ def run_cmd(command):
 def scan_dist_path():
     dist_list = []
     parser = Parser(conf_file)
-    dist_path = parser.get('ubukey', 'dist_path')
+    try:
+        dist_path = parser.get('ubukey', 'dist_path')
+    except:
+        return
     for dist in glob(dist_path+'/distribs/*'):
         dist_list.append(dist)
     return dist_path,dist_list

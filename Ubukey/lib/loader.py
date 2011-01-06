@@ -24,16 +24,26 @@ def checkConf():
                 target = os.path.join(path,d)
                 if not path_exist(target):
                     create_dir(target)
-            parser = Parser(conf_file)
-            parser.add_section('ubukey')
-            parser.set('ubukey', 'dist_path', path)
-            parser.set('ubukey', 'kernel', run_cmd('uname -r'))
-            parser.set('ubukey', 'dist', run_cmd('lsb_release -cs'))
-            write_ini(parser,conf_file)
+            return generate-config(path)
         else:
             exit()
+            
+    def generate_config(path):
+        if os.path.exists(conf_file):
+            os.remove(conf_file)
+        parser = Parser(conf_file)
+        parser.add_section('ubukey')
+        parser.set('ubukey', 'dist_path', path)
+        parser.set('ubukey', 'kernel', run_cmd('uname -r'))
+        parser.set('ubukey', 'dist', run_cmd('lsb_release -cs'))
+        write_ini(parser,conf_file)
+        
     ## load config and verify main distrib dir
-    main_dist_path,dist_list = scan_dist_path()
+    try:
+        main_dist_path,dist_list = scan_dist_path()
+    except:
+        path = FirstRun()
+        return generate_config(path)
     if not os.access(main_dist_path, os.R_OK):
         error_dialog("Votre dossier de distributions :\n%s \nn'est pas accessible, pas monté ou supprimé (recréez le)..." % main_dist_path)
         sys.exit()

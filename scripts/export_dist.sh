@@ -580,25 +580,34 @@ function genIso()
 {
 ## recheck syslinux
 syslinux_build
+lg=$(env | grep ^LANG=.* | sed 's/.*=//;s/\..*//')
+mlg=$(env | grep ^LANG=.* | sed 's/.*=//;s/_.*//')
 
-zenity --question --text "voulez vous Recompiler isolinux avec langue fr par defaut ? (conseillé)"
+zenity --question --text "voulez vous Recompiler isolinux avec langue $lg par defaut ? (conseillé)"
 case $? in
 	0)
 	echo -e "mise à jour des sources \n"
 	apt-get update &>/dev/null
 	echo -e "Téléchargement de sources gfxboot-theme-ubuntu... \n"
-	apt-get install dpkg-dev &>/dev/null
+	dpkg -l | grep dpkg-dev &>/dev/null || apt-get -y install dpkg-dev &>/dev/null
 	cd /tmp
 	apt-get source gfxboot-theme-ubuntu &>/dev/null
 	echo -e "Mise en place et nettoyage... \n"
 	sudo rm *.dsc *.tar.gz *.gz *.diff.gz &>/dev/null
 	cd gfxboot-theme-ubuntu*
-	make DEFAULT_LANG=fr
+    if [[ `ls boot/ | grep -E "$lg"` ]]; then
+        LG=$lg
+    elif [[ `ls boot/ | grep -E "$mlg"` ]]; then
+        LG=$mlg
+    else
+        LG=en
+    fi
+    make DEFAULT_LANG=$LG
 	cp -af boot/* "${DISTDIR}"/cdrom/isolinux/
 	cd "${DISTDIR}"/cdrom/isolinux/
-	echo "fr" | tee langlist &>/dev/null
+	echo "$LG" | tee langlist &>/dev/null
 	
-	echo -e "Isolinux fr ok ! \n"
+	echo -e "Isolinux $LG ok ! \n"
 	;;
 	1) ;;
 esac
