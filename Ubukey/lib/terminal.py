@@ -32,6 +32,7 @@ class VirtualTerminal(vte.Terminal):
         self.connect('eof', self.run_command_done_callback)
         self.connect('child-exited', self.run_command_done_callback)
         self.connect('cursor-moved', self.contents_changed_callback)
+        self.fork_command()
 
         if False:
             self.connect('char-size-changed', self.activate_action, 'char-size-changed')
@@ -128,7 +129,7 @@ class VirtualTerminal(vte.Terminal):
         spaces = ''
         for ii in range(80 - len(command_string) - 2):
             spaces = spaces + ' '
-       # self.feed('$ ' + str(command_string) + spaces)
+        #self.feed('$ ' + str(command_string) + spaces)
         #self.log('$ ' + str(command_string) + spaces)
 
         command = command_string.split(' ')
@@ -147,6 +148,7 @@ class VirtualTerminal(vte.Terminal):
         the run_command function to exit'''
         #print 'child done'
         self.thread_running = False
+        self.fork_command()
         
 
         
