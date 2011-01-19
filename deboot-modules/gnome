@@ -4,6 +4,7 @@ packages="
 # Gnome minimal packages
 ################
 gnome-core
+software-center
 
 # display manager
 ################

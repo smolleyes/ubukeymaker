@@ -198,9 +198,9 @@ function syslinux_build()
 
 ## check syslinux special pour le script
 if [ "$X64" == "true" ]; then
-	SYSLINUXURL="http://www.penguincape.org/downloads/scripts/ubukey/deb/syslinux-4.00_pre43-1_amd64.deb"
+	SYSLINUXURL="http://www.penguincape.org/downloads/scripts/ubukey/deb/syslinux/syslinux-4.00_pre43-1_amd64.deb"
 else
-	SYSLINUXURL="http://www.penguincape.org/downloads/scripts/ubukey/deb/syslinux-4.00_pre47-1_i386.deb"
+	SYSLINUXURL="http://www.penguincape.org/downloads/scripts/ubukey/deb/syslinux/syslinux-4.00_pre47-1_i386.deb"
 fi
 syslinux_ver="pre47-1"
 	
@@ -593,7 +593,7 @@ case $? in
 	cd /tmp
 	apt-get source gfxboot-theme-ubuntu &>/dev/null
 	echo -e "Mise en place et nettoyage... \n"
-	sudo rm *.dsc *.tar.gz *.gz *.diff.gz &>/dev/null
+	rm *.dsc *.tar.gz *.gz *.diff.gz &>/dev/null
 	cd gfxboot-theme-ubuntu*
     if [[ `ls boot/ | grep -E "$lg"` ]]; then
         LG=$lg
@@ -602,6 +602,7 @@ case $? in
     else
         LG=en
     fi
+    echo -e "\ncompile gfxboot avec la langue $LG \n"
     make DEFAULT_LANG=$LG
 	cp -af boot/* "${DISTDIR}"/cdrom/isolinux/
 	cd "${DISTDIR}"/cdrom/isolinux/

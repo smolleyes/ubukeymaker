@@ -12,7 +12,7 @@ from Xlib import X
 from subprocess import Popen, PIPE
 
 ## own import
-from lib.loader import checkConf
+from lib.loader import *
 from lib.terminal import VirtualTerminal
 from lib.distribs import Distribs
 from lib.constants import *
@@ -87,6 +87,14 @@ class Ubukey_gui(object):
         self.window.set_default_size((width - 50), (height - 80))
         
         ##  start gui widgets
+        self.start_gui()
+    
+    def start_gui(self):
+        try:
+            main_dist_path,dist_list = scan_dist_path()
+        except:
+            path = checkConf()
+            return self.start_gui()
         self.window.show_all()
         self.load_distribs_xml()
         self.start_Xephyr()

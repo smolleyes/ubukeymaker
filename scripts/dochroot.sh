@@ -658,6 +658,10 @@ rm /etc/X11/xorg.conf  &>/dev/null
 rm -R -f /var/crash/* &>/dev/null
 rm -R -f /tmp/.* &>/dev/null
 rm -R -f /root/* &>/dev/null
+ 
+## more info for damn adduser under live-session
+sed -i 's/user-setup-apply > \/dev\/null/user-setup-apply/' /usr/share/initramfs-tools/scripts/casper-bottom/10adduser &>/dev/null
+
 
 }
 
