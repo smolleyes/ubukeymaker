@@ -56,7 +56,7 @@ data_files = [
     'images/logo_kde4.png',  'images/logo_gnome.png', 
     'images/home-rw.png', 'images/logo_lxde.png', 'images/ubukeymaker.png'
     ]),
-    ('share/ubukey/conf_files', ['conf_files/extlinux.conf']), 
+    ('share/ubukey/conf_files', ['conf_files/syslinux.cfg']), 
     ('share/ubukey/deboot-modules', ['deboot-modules/lxde', 
     'deboot-modules/gnome',  'deboot-modules/xfce4',  'deboot-modules/kde4',
     ]),

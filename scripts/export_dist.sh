@@ -19,7 +19,7 @@ fi
 function COPIE()
 {
 echo -e '\E[37;44m'"\033[1m Début de la copie, merci de patienter... \033[0m"
-rsync -uravH --delete --exclude="*~" "${SOURCE}/." "${DESTINATION}/."
+sudo rsync -uravH --delete --exclude="*~" "${SOURCE}/." "${DESTINATION}/."
 
 SOURCE=""
 DESTINATION=""
@@ -40,12 +40,15 @@ elif [ -z "$usbpart" ]; then
 fi
 
 #on monte la part vfat /dev/sdx1 de la clé
-mount -t vfat -o rw,users /dev/$usbdev'1' /media/custom-usb
+if [[ ! `mount | grep "custom-usb" | grep umask=000` ]]; then
+	umount -l -f /media/custom-usb &>/dev/null
+	mount -t vfat -o rw,users,umask=000 /dev/$usbdev'1' /media/custom-usb
+fi
 
 echo  "Fichiers image et cle ok pour la copie !" 
 rm -R "${DISTDIR}"/usb/disctree &>/dev/null
 rm -R "${DISTDIR}"/usb/bin &>/dev/null
-cp -Rf "${DISTDIR}"/usb/.disk /media/custom-usb/
+sudo cp -Rf "${DISTDIR}"/usb/.disk /media/custom-usb/
 
 #Copie des fichiers, tout le dossier usb cle vide
 if [[ ! `grep '[a-z]' /media/custom-usb/*` ]] &>/dev/null; then
@@ -90,7 +93,7 @@ fi
 chmod 755 -R /media/custom-usb/* &>/dev/null
 
 ## copy initrd and vmlinuz for usb key
-cp -f "${DISTDIR}"/usb/initrd.* "${DISTDIR}"/usb/vmlinuz /media/custom-usb &>/dev/null
+sudo cp -f "${DISTDIR}"/usb/initrd.* "${DISTDIR}"/usb/vmlinuz /media/custom-usb &>/dev/null
 
 elif [ "$copyType" == "cdrom" ]; then
 rm -R "${DISTDIR}"/cdrom/disctree &>/dev/null
@@ -118,8 +121,9 @@ sleep 5
 function extlinuxconf()
 {
 #on monte la part vfat /dev/sdx1 de la clé
-if [[ ! `mount | grep "custom-usb" || ls /media/custom-usb = ""` ]]; then
-	mount -t vfat -o rw,users /dev/$usbdev'1' /media/custom-usb
+if [[ ! `mount | grep "custom-usb" | grep umask=000` ]]; then
+	umount -l -f /media/custom-usb &>/dev/null
+	mount -t vfat -o rw,users,umask=000 /dev/$usbdev'1' /media/custom-usb
 fi
 
 ## modifie syslinux.cfg si besoin
@@ -154,8 +158,8 @@ ext=$(echo  $splash_image | sed 's/.*\([^\.]\+\)\.\([^\.]\+\)$/\2/')
 echo -e "Redimensionne l'image "$splash_image" ! \n"
 convert -resize "640x480!" $splash_image -quality "100" splash.$ext
 rm "${DISTDIR}"/splash* &>/dev/null
-cp splash.$ext "${DISTDIR}"
-cp "${DISTDIR}"/splash.$ext /media/custom-usb/
+sudo cp splash.$ext "${DISTDIR}"
+sudo cp "${DISTDIR}"/splash.$ext /media/custom-usb/
 sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.'$ext'/' /media/custom-usb/syslinux.cfg 
 zenity --info --text "l'image $splash_image est maintenant mise en place"
 
@@ -166,7 +170,7 @@ if [[ ! `ls /media/custom-usb/ | grep -e "splash"` ]]; then
 cd "${DISTDIR}"/temp
 testConnect
 wget --quiet http://www.penguincape.org/downloads/scripts/ubukey/images/splash.jpg
-cp splash.jpg /media/custom-usb/ &>/dev/null
+sudo cp splash.jpg /media/custom-usb/ &>/dev/null
 sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.jpg/' /media/custom-usb/syslinux.cfg 
 fi
 ;;
@@ -199,7 +203,6 @@ function syslinux_build()
 echo -e "Verification de syslinux... \n"
 installed="$(dpkg -l | grep syslinux | awk '{print $2}')"
 version="$(dpkg -l | grep syslinux | awk '{print $3}')"
-pkg="$(basename ${SYSLINUXURL})"
 
 if [[ ! -e /usr/bin/syslinux || ! -e "/usr/lib/syslinux" || -z "version" || "$version" == "pre47-1" ]]; then
 	echo -e "Téléchargement/reinstallation de sylinux, veuillez patienter... \n"
@@ -587,7 +590,7 @@ case $? in
     fi
     echo -e "\ncompile gfxboot avec la langue $LG \n"
     make DEFAULT_LANG=$LG
-	cp -af boot/* "${DISTDIR}"/cdrom/isolinux/
+	sudo cp -af boot/* "${DISTDIR}"/cdrom/isolinux/
 	cd "${DISTDIR}"/cdrom/isolinux/
 	echo "$LG" | tee langlist &>/dev/null
 	
@@ -767,7 +770,7 @@ usbdev=$(sudo blkid | grep -e "extlinux-ro" | awk '{print $1}' | sed 's/.*\///' 
 if [ -z "$usbdev" ]; then
 
 ## passe a la detection par hal direct....
-devlist=$(hal-device | grep sd | grep block.device | awk '{print $3}' | sed "s/'//g" | sed 's/.*\///g' | sort | tee /tmp/hallist)
+devlist=$(cat /proc/partitions | grep sd | awk '{print $4}' | sed "s/'//g" | sed 's/.*\///g' | sort | tee /tmp/hallist)
 
 (zenity --warning --text "Merci de brancher la clé que vous souhaitez utiliser ...
 
@@ -778,7 +781,7 @@ et rebrancher finalement comme indiqué...
 Cette fenêtre sera fermée automatiquement une fois votre clé détectée." &) 2>/dev/null
 
 while [ -z "$usbdev" ]; do
-		usbscan=$(hal-device | grep sd | grep block.device | awk '{print $3}' | sed "s/'//g" | sed 's/.*\///g' | sort | tee /tmp/usbscan)
+		usbscan=$(cat /proc/partitions | grep sd | awk '{print $4}' | sed "s/'//g" | sed 's/.*\///g' | sort | tee /tmp/usbscan)
 		scan=$(diff -n /tmp/hallist /tmp/usbscan | grep "^sd")
 		scan2=$(diff -n /tmp/usbscan /tmp/hallist | grep "^sd")
 		if [[ -z "$scan" && -z "$scan2" ]]; then
@@ -793,7 +796,6 @@ while [ -z "$usbdev" ]; do
 			break 
 		fi
 done
-killall -q -9 zenity
 
 else
 	if [[ "`cat /proc/mounts | grep -e ""$usbdev"1" | awk '{print $2}'`" = "/cdrom" ]]; then
@@ -810,7 +812,7 @@ sur session live-usb, relance l'assistant de détéction de la clé à préparer
 fi
 
 ## sur verif...
-while [[ ! $(hal-device | grep -e "$usbdev") ]]; do
+while [[ ! $(cat /proc/partitions | grep -e "$usbdev") ]]; do
 	echo -e "cle détectée sur /dev/$usbdev, Rebranchez la pour continuer..."
 	sleep 10
 done
@@ -835,7 +837,7 @@ mkdir /media/custom-usb &>/dev/null
 
 scanKey
 
-usbpart=$(hal-device | grep -e "$usbdev[0-9]" | grep block.device | awk '{print $3}' | sed "s/'//g" | sed 's/.*\///g' | xargs)
+usbpart=$(cat /proc/partitions | grep $usbdev | awk '{print $4}' | sed "s/^$usbdev$//g;/^$/d" | sort | xargs)
 
 if [[ "$usbdev" && -z "$usbpart" || "$usbpart" = "$usbdev" ]]; then
 	echo 

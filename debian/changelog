@@ -1,4 +1,4 @@
-ubukey (0.1.5-0ppa0~maverick) maverick; urgency=low
+ubukey (0.1.5-0ppa1~maverick) maverick; urgency=low
 
   * remove custom syslinux 4
   * use fat32 for usb partitions
