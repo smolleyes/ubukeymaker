@@ -39,8 +39,8 @@ elif [ -z "$usbpart" ]; then
 	exit 0 
 fi
 
-#on monte la part ext4 /dev/sdx1 de la clé
-mount -t ext4 -o rw,users /dev/$usbdev'1' /media/custom-usb
+#on monte la part vfat /dev/sdx1 de la clé
+mount -t vfat -o rw,users /dev/$usbdev'1' /media/custom-usb
 
 echo  "Fichiers image et cle ok pour la copie !" 
 rm -R "${DISTDIR}"/usb/disctree &>/dev/null
@@ -117,29 +117,28 @@ sleep 5
 ## Prepare Extlinux si necessaire...
 function extlinuxconf()
 {
-#on monte la part ext4 /dev/sdx1 de la clé
+#on monte la part vfat /dev/sdx1 de la clé
 if [[ ! `mount | grep "custom-usb" || ls /media/custom-usb = ""` ]]; then
-	mount -t ext4 -o rw,users /dev/$usbdev'1' /media/custom-usb
+	mount -t vfat -o rw,users /dev/$usbdev'1' /media/custom-usb
 fi
 
-## modifie extlinux.cfg si besoin
+## modifie syslinux.cfg si besoin
 if [ -e "/media/custom-usb/initrd.lz" ]; then
-	sed -i 's/initrd.gz/initrd.lz/g' /media/custom-usb/boot/extlinux.conf
-	sed -i 's/.utf8/.UTF-8/g' /media/custom-usb/boot/extlinux.conf
+	sed -i 's/initrd.gz/initrd.lz/g' /media/custom-usb/syslinux.cfg
+	sed -i 's/.utf8/.UTF-8/g' /media/custom-usb/syslinux.cfg
 fi
 
-bootdir="/media/custom-usb/boot"
-if [ ! -e "$bootdir/extlinux.sys" ]; then
-	mkdir -p "$bootdir" &>/dev/null
-	echo -e "extlinux va etre installe sur "$bootdir", (disque /dev/"$usbdev") \n"
-	extlinux -i "$bootdir"
+bootdir="/media/custom-usb"
+if [ ! -e "$bootdir/syslinux.sys" ]; then
+	echo -e "syslinux va etre installe sur "$bootdir", (disque /dev/"$usbdev") \n"
+	syslinux /dev/$usbdev'1'
 else
-	echo "Extlinux deja installé"
+	echo "Configuration de syslinux deja installée"
 fi
 testConnect
 
 ## changement image boot ou pas
-zenity --question --title "Splash screen" --text "Voulez vous choisir une autre image de fond pour extlinux ?
+zenity --question --title "Splash screen" --text "Voulez vous choisir une autre image de fond pour syslinux ?
 (Image que vous verrez au boot de votre clé)"
 case $? in
 0) zenity --question --text "Voulez vous lancer firefox sur gnome-look pour choisir une image ?"
@@ -157,7 +156,7 @@ convert -resize "640x480!" $splash_image -quality "100" splash.$ext
 rm "${DISTDIR}"/splash* &>/dev/null
 cp splash.$ext "${DISTDIR}"
 cp "${DISTDIR}"/splash.$ext /media/custom-usb/
-sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.'$ext'/' /media/custom-usb/boot/extlinux.conf 
+sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.'$ext'/' /media/custom-usb/syslinux.cfg 
 zenity --info --text "l'image $splash_image est maintenant mise en place"
 
 ;; ## fin choix splash
@@ -168,22 +167,22 @@ cd "${DISTDIR}"/temp
 testConnect
 wget --quiet http://www.penguincape.org/downloads/scripts/ubukey/images/splash.jpg
 cp splash.jpg /media/custom-usb/ &>/dev/null
-sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.jpg/' /media/custom-usb/boot/extlinux.conf 
+sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.jpg/' /media/custom-usb/syslinux.cfg 
 fi
 ;;
 
 esac
 
-## reverifie locale extlinux.cfg
+## reverifie locale syslinux.cfg
 LOCALUTF=$(env | grep -w "LANG" | sed -e 's/LANG=//' -e 's/.utf8/.UTF-8/g')
 LOCALBASE=$(env | grep -w "LANG" | sed -e 's/\..*//' -e 's/LANG=//')
 LOCALSIMPLE=$(env | grep -w "LANG" | sed -e 's/\..*//' -e 's/LANG=//' -e 's/_.*//')
 
-if [[ ! `cat /media/custom-usb/boot/extlinux.conf | grep "locale=$LOCALUTF bootkbd=$LOCALSIMPLE console-setup/layoutcode=$LOCALSIMPLE"` ]]; then
-	sed -i "s/locale=.* console/locale=$LOCALUTF bootkbd=$LOCALSIMPLE console-setup\/layoutcode=$LOCALSIMPLE console/g" /media/custom-usb/boot/extlinux.conf &>/dev/null
+if [[ ! `cat /media/custom-usb/syslinux.cfg | grep "locale=$LOCALUTF bootkbd=$LOCALSIMPLE console-setup/layoutcode=$LOCALSIMPLE"` ]]; then
+	sed -i "s/locale=.* console/locale=$LOCALUTF bootkbd=$LOCALSIMPLE console-setup\/layoutcode=$LOCALSIMPLE console/g" /media/custom-usb/syslinux.cfg &>/dev/null
 fi
 
-echo  "Extlinux ok !"
+echo  "Configuration syslinux ok !"
 echo 
 sleep 5
 
@@ -197,50 +196,33 @@ function syslinux_build()
 {
 
 ## check syslinux special pour le script
-if [ "$X64" == "true" ]; then
-	SYSLINUXURL="http://www.penguincape.org/downloads/scripts/ubukey/deb/syslinux/syslinux-4.00_pre43-1_amd64.deb"
-else
-	SYSLINUXURL="http://www.penguincape.org/downloads/scripts/ubukey/deb/syslinux/syslinux-4.00_pre47-1_i386.deb"
-fi
-syslinux_ver="pre47-1"
-	
-
-cd "${DISTDIR}"/temp
 echo -e "Verification de syslinux... \n"
 installed="$(dpkg -l | grep syslinux | awk '{print $2}')"
 version="$(dpkg -l | grep syslinux | awk '{print $3}')"
 pkg="$(basename ${SYSLINUXURL})"
 
-if [[ ! -e /usr/bin/syslinux || ! -e "/usr/lib/syslinux" || -z "version" || "$syslinux_ver" != "$version" ]]; then
-	echo -e "Téléchargement/Installation de syslinux-4.0-$syslinux_ver special ubukey, veuillez patienter... \n"
+if [[ ! -e /usr/bin/syslinux || ! -e "/usr/lib/syslinux" || -z "version" || "$version" == "pre47-1" ]]; then
+	echo -e "Téléchargement/reinstallation de sylinux, veuillez patienter... \n"
 sleep 3
 #download / compile syslinux
+rm -R /usr/lib/syslinux &>/dev/null
+rm -R /usr/lib64/syslinux &>/dev/null
 	cd /tmp
 		testConnect
 		for i in `dpkg -l | grep syslinux | awk '{print $2}' | xargs`; do
-			apt-get -y --force-yes remove --purge "$i" &>/dev/null
+			apt-get -y remove --purge "$i" &>/dev/null
 		done
-		wget "$SYSLINUXURL"
-		dpkg -i --force-overwrite "$pkg"
+		apt-get -y --force-yes install syslinux
 		
 	sleep 2
 else
-	echo -e "syslinux-4.0-$version/extlinux deja installé... ok \n" 
+	echo -e "syslinux deja installé... ok \n" 
 fi
 
-if [ "$X64" == "true" ]; then
-	rm -R /usr/lib64/syslinux &>/dev/null
-	ln -sf /usr/share/syslinux /usr/lib64/syslinux 
-else
-	rm -R /usr/lib/syslinux &>/dev/null
-	ln -sf /usr/share/syslinux /usr/lib/syslinux 
-fi
-
-bootdir="${DISTDIR}/usb/boot"
-echo -e "Préparation du dossier boot pour usb \n" 
-mkdir -p "$bootdir" &>/dev/null
-if [ ! -e "$bootdir/extlinux.conf" ]; then
-	cp -f $UBUKEYDIR/conf_files/extlinux.conf "$bootdir/"
+bootdir="${DISTDIR}/usb"
+echo -e "Préparation des fichiers de boot pour usb \n" 
+if [ ! -e "$bootdir/syslinux.cfg" ]; then
+	cp -f $UBUKEYDIR/conf_files/syslinux.cfg "$bootdir/"
 fi
 
 if [ "$X64" == "true" ]; then	
@@ -411,7 +393,7 @@ umount "${DISTDIR}"/chroot &>/dev/null
 
 }
 
-### fonction detection des process restant et umount image ext4
+### fonction detection des process restant et umount image fat
 function umountImage()
 {
 ## et on verifie tout ca
@@ -428,6 +410,7 @@ else
 fi
 
 echo -e "Image demontee... ok \n"
+
 }
 
 ##########################################################
@@ -509,7 +492,7 @@ else
 	cp /usr/lib/grub/x86_64-pc/stage2_eltorito "${DISTDIR}"/bootcd/boot/grub/
 fi
 
-echo -e "Genere le fichier de conf extlinux"
+echo -e "Genere le fichier de conf syslinux"
 
 echo "default 0
 timeout 20
@@ -845,7 +828,7 @@ umount /media/casper-rw &>/dev/null
 umount /media/extlinux-ro &>/dev/null
 rm -Rf /media/extlinux-ro &>/dev/null
 rm -Rf /media/casper-rw &>/dev/null
-chattr -R -i /media/custom-usb/boot/extlinux.sys &>/dev/null
+chattr -R -i /media/custom-usb/ldlinux.sys &>/dev/null
 rm -Rf /media/custom-usb &>/dev/null
 mkdir /media/custom-usb &>/dev/null
 ## scan de la cle
@@ -885,8 +868,8 @@ echo -e "Contrôle de la clé..."
 labelro="extlinux-ro"
 labelrw="casper-rw"
 
-FSPART1=`blkid -s TYPE /dev/"$usbdev"1 | awk {'print $2'} | grep ext4`
-FSPART2=`blkid -s TYPE /dev/"$usbdev"2 | awk {'print $2'} | grep ext4`
+FSPART1=`blkid -s TYPE /dev/"$usbdev"1 | awk {'print $2'} | grep fat`
+FSPART2=`blkid -s TYPE /dev/"$usbdev"2 | awk {'print $2'} | grep fat`
 LBPART1=`blkid /dev/"$usbdev"1 | grep "$labelro"`
 LBPART2=`blkid /dev/"$usbdev"2 | grep "$labelrw"`
 
@@ -904,8 +887,8 @@ elif [ -z "${LBPART2}" ]; then
 exit 0
 else
 	echo 
-	echo  "Partition 1 ok : Format \"ext4\", Label: \"$labelro\""
-	echo  "Partition 2 ok : Format \"ext4\", Label: \"$labelrw\""
+	echo  "Partition 1 ok : Format \"vfat\", Label: \"$labelro\""
+	echo  "Partition 2 ok : Format \"vfat\", Label: \"$labelrw\""
 	
 	echo 
 	echo  "Test des partitions de la clé ok"
@@ -981,10 +964,10 @@ esac
 else
 devname=$(blkid | grep "$usbdev"1 | awk '{print $2}' | sed 's/[A-Z\ = "]//g')
 actual=$(parted /dev/"$usbdev" unit Mb print | grep -w "^ 1" | awk {'print $3'} | sed 's/[A-Z\, a-z/]//g')
-FSPART1=`blkid -s TYPE /dev/"$usbdev"1 | awk {'print $2'} | grep ext4 | sed 's/TYPE=\"//;s/\"//'`
-FSPART2=`blkid -s TYPE /dev/"$usbdev"2 | awk {'print $2'} | grep ext4 | sed 's/TYPE=\"//;s/\"//'`
+FSPART1=`blkid -s TYPE /dev/"$usbdev"1 | awk {'print $2'} | grep fat | sed 's/TYPE=\"//;s/\"//'`
+FSPART2=`blkid -s TYPE /dev/"$usbdev"2 | awk {'print $2'} | grep fat | sed 's/TYPE=\"//;s/\"//'`
 
-if [[ "$PART1" -gt "$actual" || "$devname" != "extlinux-ro" || "$FSPART1" != "ext4" || "$FSPART2" != "ext4" ]]; then
+if [[ "$PART1" -gt "$actual" || "$devname" != "extlinux-ro" || "$FSPART1" != "vfat" || "$FSPART2" != "vfat" ]]; then
 
 zenity --question --text "Votre clé \"$usbdev\" doit être reformatée !
 
@@ -1066,26 +1049,31 @@ PART=/dev/$usbdev
 #SECTORS=`cat /tmp/diskpart | grep "^secteurs" | sed 's/secteurs : //'`
 ## print values to log
 #cat /tmp/diskpart | tee -a $LOG &>/dev/null
-parted -s /dev/$usbdev unit MB mkpart primary ext4 1 $PART1_SIZE -a cyl >/dev/null 2>&1
+parted -s /dev/$usbdev unit MB mkpart primary fat32 1 $PART1_SIZE -a cyl >/dev/null 2>&1
 
 UMOUNT_SD
 
 echo 
 echo  "Prépare la partition /dev/"$usbdev"2"
-#SECPART=$(( $FIRSTPART + 1 ))
-parted -s /dev/$usbdev unit MB mkpart primary ext4 $PART1_SIZE 100% -a cyl >/dev/null 2>&1 ## TOTALSSSSS for sectors...
+TOTAL=$(parted /dev/$usbdev unit Mb print | grep "$usbdev" | sed 's/.*://' | tail -n 1 | sed 's/MB//')
+SECPART=$(( $TOTAL - $PART1_SIZE ))
+## securitee fat...
+if [[ $SECPART -gt 3990 ]]; then
+	SECPART=$(( $PART1_SIZE + 3990 ))
+fi
+parted -s /dev/$usbdev unit MB mkpart primary fat32 $PART1_SIZE $SECPART -a cyl >/dev/null 2>&1 ## TOTALSSSSS for sectors...
 
 UMOUNT_SD
 
 echo -e "Formate les partitions ..."
-mke2fs -T ext4 -b 4096 -L extlinux-ro /dev/$usbdev'1' >/dev/null 2>&1 & wait_valid $usbdev'1'
+mkdosfs -F 32 -n extlinux-ro /dev/$usbdev'1' >/dev/null 2>&1 & wait_valid $usbdev'1'
 UMOUNT_SD
-mke2fs -T ext4 -b 4096 -L casper-rw /dev/$usbdev'2' >/dev/null 2>&1 & wait_valid $usbdev'2'
+mkdosfs -F 32 -n casper-rw /dev/$usbdev'2' >/dev/null 2>&1 & wait_valid $usbdev'2'
 UMOUNT_SD
 
-echo -e "disable journal for ext4"
-tune2fs -O ^has_journal /dev/$usbdev'1' >/dev/null 2>&1
-tune2fs -O ^has_journal /dev/$usbdev'2' >/dev/null 2>&1
+#echo -e "disable journal for ext4"
+#tune2fs -O ^has_journal /dev/$usbdev'1' >/dev/null 2>&1
+#tune2fs -O ^has_journal /dev/$usbdev'2' >/dev/null 2>&1
 
 #| zenity --progress --pulsate --text "Formatage de la partition "$usbdev"1" --auto-close #formate et pose label
 #while [[ `ps aux | grep [m]kfs.ext4` ]]; do sleep 3; done
@@ -1104,8 +1092,8 @@ function wait_valid () {
 	sleep 2
 	echo -e "\nformatage de /dev/$part en cours..."
 	while [ : ] ; do
-		check="$(sudo blkid -s TYPE /dev/$part | awk {'print $2'} | grep ext4 | sed 's/TYPE=\"//;s/\"//')"
-		if [ "$check" = "ext4" ]; then
+		check="$(sudo blkid -s TYPE /dev/$part | awk {'print $2'} | grep fat | sed 's/TYPE=\"//;s/\"//')"
+		if [ "$check" = "vfat" ]; then
 			echo -e "Formatage terminé ! \n"
 			break
 		elif [ $sec -eq 120 ]; then
@@ -1155,7 +1143,6 @@ fi
 PART1=$(($PRESIZE + (($PRESIZE*6/100))))
 #sleep 3
 
-#régler /dev/sdd et taille_souhaite="1125"
 taille_souhaite="$PART1" #en MB
 heads=$(sfdisk -G /dev/"$usbdev" | awk '{print $4}')
 sectors=$(sfdisk -G /dev/"$usbdev" | awk '{print $6}')

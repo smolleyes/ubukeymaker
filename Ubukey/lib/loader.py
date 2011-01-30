@@ -37,12 +37,13 @@ def checkConf():
         if not os.access(main_dist_path, os.R_OK):
             error_dialog("Votre dossier de distributions :\n%s \nn'est pas accessible, pas montÃ© ou supprimÃ© (recrÃ©ez le)..." % main_dist_path)
             sys.exit()
-    ## LOGS
-    if not path_exist(LOGDIR):
-        create_dir(LOGDIR)
-    ## clean the log file
-    if path_exist(LOG):
-        os.remove(LOG)
+            
+## LOGS
+if not path_exist(LOGDIR):
+	create_dir(LOGDIR)
+## clean the log file
+if path_exist(LOG):
+    os.remove(LOG)
                 
 def generate_config(path):
     if os.path.exists(conf_file):
@@ -53,6 +54,7 @@ def generate_config(path):
     parser.set('ubukey', 'kernel', run_cmd('uname -r'))
     parser.set('ubukey', 'dist', run_cmd('lsb_release -cs'))
     write_ini(parser,conf_file)
+    create_dir(LOGDIR)
 
         
 def FirstRun():
