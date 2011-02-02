@@ -717,7 +717,7 @@ rm "${DISTDIR}"/chroot/var/run/* &>/dev/null
 umount -l -f ${DISTDIR}/chroot/media/pc-local/media &>/dev/null
 umount -l -f ${DISTDIR}/chroot/media/pc-local/home &>/dev/null
 umount /dev/loop* -l -f &>/dev/null
-if [[ `ls "${DISTDIR}"/chroot/media/pc-local/home == ""` ]]; then
+if [[ ! `mount | grep "pc-local"` ]]; then
 	rm -R "${DISTDIR}"/chroot/media/pc-local &>/dev/null
 fi
 sed -i '/^>/d;/WARNING/d' "${DISTDIR}"/logs/chrootlog.log &>/dev/null
