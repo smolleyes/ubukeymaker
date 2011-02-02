@@ -36,6 +36,7 @@ nano
 ## for live-cd
 casper
 lupin-casper
+wireless-tools
 
 # THEME
 ############

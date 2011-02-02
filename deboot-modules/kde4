@@ -12,9 +12,9 @@ kdm
 
 # Browser
 #########################
-#chromium-browser
-#chromium-codecs-ffmpeg-extra
-#chromium-browser-l10n
+chromium-browser
+chromium-codecs-ffmpeg-extra
+chromium-browser-l10n
 #firefox
 
 # APT
@@ -36,6 +36,7 @@ nano
 ## for live-cd
 casper
 lupin-casper
+wireless-tools
 
 # DOCS and locales
 ############

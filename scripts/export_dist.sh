@@ -334,6 +334,7 @@ update-initramfs -ck all
 fi
 
 ## recreate initrd.lz file
+rm -R /tmp/tmpdir &>/dev/null
 mkdir /tmp/tmpdir
 cd /tmp/tmpdir
 cp /boot/initrd.img-$initver .
@@ -581,9 +582,9 @@ case $? in
 	echo -e "Mise en place et nettoyage... \n"
 	rm *.dsc *.tar.gz *.gz *.diff.gz &>/dev/null
 	cd gfxboot-theme-ubuntu*
-    if [[ `ls boot/ | grep -E "$lg"` ]]; then
+    if [[ `ls po/ | grep -E "$lg"` ]]; then
         LG=$lg
-    elif [[ `ls boot/ | grep -E "$mlg"` ]]; then
+    elif [[ `ls po/ | grep -E "$mlg"` ]]; then
         LG=$mlg
     else
         LG=en

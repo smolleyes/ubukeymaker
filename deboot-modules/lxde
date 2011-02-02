@@ -14,6 +14,9 @@ lxshortcut
 lxsession-edit
 lxde-icon-theme
 lubuntu-default-settings
+wireless-tools
+openbox-themes
+leafpad
 
 # display manager (as gdm)
 #########################
@@ -43,6 +46,8 @@ ntfs-3g
 ntfs-config
 scrounge-ntfs
 hal
+casper
+lupin-casper
 
 # locales
 ############

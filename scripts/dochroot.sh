@@ -66,8 +66,10 @@ apt-get clean &>/dev/null
 dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null 
 ## copie fichiers sources et cle gpg locales
 cp -R /etc/apt/{sources.list,trusted.gpg,sources.list.d} "${DISTDIR}"/chroot/etc/ubukey/sources/
+rm "${DISTDIR}"/chroot/etc/ubukey/sources/sources.list.d/private-ppa* &>/dev/null
 if [ -z "$console" ]; then
 	cp -R -f /etc/apt/{sources.list,trusted.gpg,sources.list.d} "${DISTDIR}"/chroot/etc/apt/
+	rm "${DISTDIR}"/chroot/etc/apt/sources.list.d/private-ppa* &>/dev/null
 fi
 ## exporter la liste des paquets locaux
 dpkg --get-selections | tee "${DISTDIR}"/chroot/etc/ubukey/sources/pkglist.selections &>/dev/null
@@ -695,6 +697,7 @@ mv "${DISTDIR}"/chroot/etc/mtab-save "${DISTDIR}"/chroot/etc/mtab
 mv "${DISTDIR}"/chroot/etc/fstab-save "${DISTDIR}"/chroot/etc/fstab
 rm "${DISTDIR}"/chroot/var/lib/dbus/machine-id &>/dev/null
 rm -R "${DISTDIR}"/chroot/usr/share/ubukey &>/dev/null
+rm -R "${DISTDIR}"/chroot/media/pc-local &>/dev/null
 if [[ !  `grep -w "\/root" "${DISTDIR}"/chroot/etc/passwd` ]]; then
 echo -e "Probleme avec /etc/passwd..."
 sleep 5
