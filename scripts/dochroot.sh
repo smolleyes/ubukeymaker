@@ -697,7 +697,6 @@ mv "${DISTDIR}"/chroot/etc/mtab-save "${DISTDIR}"/chroot/etc/mtab
 mv "${DISTDIR}"/chroot/etc/fstab-save "${DISTDIR}"/chroot/etc/fstab
 rm "${DISTDIR}"/chroot/var/lib/dbus/machine-id &>/dev/null
 rm -R "${DISTDIR}"/chroot/usr/share/ubukey &>/dev/null
-rm -R "${DISTDIR}"/chroot/media/pc-local &>/dev/null
 if [[ !  `grep -w "\/root" "${DISTDIR}"/chroot/etc/passwd` ]]; then
 echo -e "Probleme avec /etc/passwd..."
 sleep 5
@@ -718,6 +717,9 @@ rm "${DISTDIR}"/chroot/var/run/* &>/dev/null
 umount -l -f ${DISTDIR}/chroot/media/pc-local/media &>/dev/null
 umount -l -f ${DISTDIR}/chroot/media/pc-local/home &>/dev/null
 umount /dev/loop* -l -f &>/dev/null
+if [[ `ls "${DISTDIR}"/chroot/media/pc-local == ""` ]]; then
+	rm -R "${DISTDIR}"/chroot/media/pc-local &>/dev/null
+fi
 sed -i '/^>/d;/WARNING/d' "${DISTDIR}"/logs/chrootlog.log &>/dev/null
 
 if [[ $(mount | grep "/proc/sys/fs/binfmt_misc") ]]; then
