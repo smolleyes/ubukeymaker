@@ -562,6 +562,11 @@ fi
 chown -R root:root /etc/skel
 ## maj kernel et/ou verification
 message "Verifie l'integritee des fichiers vmlinuz/initrd \n"
+
+if [ ! -e "/usr/sbin/update-initramfs" ]; then
+apt-get -y --force-yes install initramfs-tools
+fi
+
 INIT=$(ls -al /initrd.img | sed 's/.*boot\///')
 VMLINUZ=$(ls -al /vmlinuz | sed 's/.*boot\///')
 
@@ -582,13 +587,19 @@ sleep 2
 removeHeaders=$( echo "$toRemove" |sed 's/-generic/*/')
 ##
 message "Nettoyage des kernels superflus \n"
-apt-get remove --purge -y --force-yes linux-image-"$toRemove" linux-headers-"$removeHeaders"
-rm -R /usr/src/linux-headers-"$removeHeaders" &>/dev/null
-rm -R /lib/modules/"$toRemove"
+apt-get remove -y --force-yes linux-image-"$toRemove" linux-headers-"$toRemove"
+rm -R /usr/src/linux-headers-"$toRemove" &>/dev/null
+rm -R /lib/modules/"$toRemove" &>/dev/null
 rm /*.bak
 rm /*.old
 rm /boot/*.bak
 rm /boot/*.old
+
+initver=$(ls -al /boot/initrd.* | tail -n1 | sed 's/.*boot\/initrd.img-//')
+if [[ -e "/boot/vmlinuz-$initver" && ! -e "/vmlinuz" ]]; then
+ln -s /boot/vmlinuz-$initver /vmlinuz
+fi
+
 fi
 
 message "Nettoyage de dpkg \n"
