@@ -323,7 +323,7 @@ sed -i 's/rw,noatime,mode=755/rw,noatime/' /usr/share/initramfs-tools/scripts/ca
 
 ## maj initiale du kernel
 initcheck=$(ls /boot | grep "vmlinuz")
-initver=$(ls -al /boot/initrd.* | tail -n1 | sed 's/.*boot\/initrd.img-//')
+initver=$(ls -al /boot/initrd.* | tail -n1 | sed 's/.*2.6/2.6/')
 DIST=$(lsb_release -cs)
 if [[ -z "$initcheck" || -z "$initver" ]]; then
 message "Initrd manquant, reinstallation pour kernel : $initver, merci de patienter... \n"
@@ -331,6 +331,10 @@ apt-get -y --force-yes install --reinstall linux-image-$initver linux-headers-$i
 else
 message "mise a jour en version: $initver, merci de patienter... \n"
 update-initramfs -ck all
+fi
+
+if [[ ! `dpkg -l | awk '{print $2}' | grep -E "^lzma$"` ]]; then
+apt-get -y --force-yes install lzma
 fi
 
 ## recreate initrd.lz file
@@ -342,10 +346,6 @@ gzip -dc initrd.img-$initver | cpio -id
 rm initrd.img*
 find . | cpio --quiet --dereference -o -H newc | lzma -7 > /initrd.lz
 rm -R /tmp/tmpdir
-
-if [[ -e "/boot/vmlinuz-$initver" && ! -e "/vmlinuz" ]]; then
-ln -s /boot/vmlinuz-$initver /vmlinuz
-fi
 
 umount /proc
 umount /sys

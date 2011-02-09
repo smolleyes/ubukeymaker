@@ -39,7 +39,7 @@ if [ ! -e "${DISTDIR}"/chroot/usr/share/ubukey ]; then
 mkdir "${DISTDIR}"/chroot/usr/share/ubukey
 fi
 
-rsync -uravH --delete --exclude ".git" --exclude "~" $UBUKEYDIR/ "${DISTDIR}"/chroot/usr/share/ubukey
+rsync -uravH --delete --exclude ".git" --exclude "~" $UBUKEYDIR/. "${DISTDIR}"/chroot/usr/share/ubukey/.
 chmod +x "${DISTDIR}"/chroot/usr/share/ubukey/scripts/*
 
 sessionType=$(grep -e "distSession" "${DISTDIR}"/config | sed 's/.*distSession=//')
@@ -64,13 +64,47 @@ cp -f "${DISTDIR}"/config "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf ## config ge
 apt-get clean &>/dev/null
 ## nettoie fichiers desinstalles mais pas la conf donc toujours apparents
 dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null 
-## copie fichiers sources et cle gpg locales
-cp -R /etc/apt/{sources.list,trusted.gpg,sources.list.d} "${DISTDIR}"/chroot/etc/ubukey/sources/
-rm "${DISTDIR}"/chroot/etc/ubukey/sources/sources.list.d/private-ppa* &>/dev/null
-if [ -z "$console" ]; then
-	cp -R -f /etc/apt/{sources.list,trusted.gpg,sources.list.d} "${DISTDIR}"/chroot/etc/apt/
-	rm "${DISTDIR}"/chroot/etc/apt/sources.list.d/private-ppa* &>/dev/null
+## verifies ppa etc
+if [[ `apt-get update 2>&1 | tee /tmp/t &>/dev/null && cat /tmp/t | grep "ppa.launchpad.net.*NO_PUBKEY"` ]]; then
+# Simple script to check for all PPAs refernced in your apt sources and
+# to grab any signing keys you are missing from keyserver.ubuntu.com.
+# Additionally copes with users on launchpad with multiple PPAs
+# (e.g., ~asac)
+#
+# Author: Dominic Evans https://launchpad.net/~oldman
+# License: LGPL v2
+
+for APT in `find /etc/apt/ -name *.list`; do
+    grep -o "^deb http://ppa.launchpad.net/[a-z0-9\-]\+/[a-z0-9\-]\+" $APT | while read ENTRY ; do
+        # work out the referenced user and their ppa
+        USER=`echo $ENTRY | cut -d/ -f4`
+        PPA=`echo $ENTRY | cut -d/ -f5`
+        # some legacy PPAs say 'ubuntu' when they really mean 'ppa', fix that up
+        if [ "ubuntu" = "$PPA" ]
+        then
+            PPA=ppa
+        fi
+        # scrape the ppa page to get the keyid
+        KEYID=`wget -q --no-check-certificate https://launchpad.net/~$USER/+archive/$PPA -O- | grep -o "1024R/[A-Z0-9]\+" | cut -d/ -f2`
+        sudo apt-key adv --list-keys $KEYID >/dev/null 2>&1
+        if [ $? != 0 ]
+        then
+            echo Grabbing key $KEYID for archive $PPA by ~$USER
+            sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com $KEYID
+        else
+            echo Already have key $KEYID for archive $PPA by ~$USER
+        fi
+    done
+done
+########################################################################
 fi
+
+## copie fichiers sources et cle gpg locales
+rm "${DISTDIR}"/chroot/etc/ubukey/sources/sources.list.d/private-ppa* &>/dev/null
+cp -R -f /etc/apt/{sources.list,trusted.*,sources.list.d} "${DISTDIR}"/chroot/etc/apt/
+cp -R -f /etc/apt/{sources.list,trusted.*,sources.list.d} "${DISTDIR}"/chroot/etc/ubukey/sources
+rm "${DISTDIR}"/chroot/etc/apt/sources.list.d/private-ppa* &>/dev/null
+
 ## exporter la liste des paquets locaux
 dpkg --get-selections | tee "${DISTDIR}"/chroot/etc/ubukey/sources/pkglist.selections &>/dev/null
 
@@ -171,8 +205,6 @@ mkdir "${DISTDIR}"/chroot/usr/local/bin/ubukey-addons &>/dev/null
 cp -f "${WORK}"/addons/$CHROOTVER/"$sessionType"/* "${DISTDIR}"/chroot/usr/local/bin/ubukey-addons &>/dev/null
 cp -f "${WORK}"/addons/all/* "${DISTDIR}"/chroot/usr/local/bin/ubukey-addons &>/dev/null
 cp -f "${WORK}"/addons/custom/* "${DISTDIR}"/chroot/usr/local/bin/ubukey-addons &>/dev/null
-cp -f /etc/apt/sources.list "${DISTDIR}"/chroot/etc/apt/ &>/dev/null
-cp -R -f /etc/apt/sources.list.d "${DISTDIR}"/chroot/etc/apt/ &>/dev/null
 mv "${DISTDIR}"/chroot/etc/fstab "${DISTDIR}"/chroot/etc/fstab-save
 mv "${DISTDIR}"/chroot/etc/mtab "${DISTDIR}"/chroot/etc/mtab-save
 cp -R -f /etc/fstab "${DISTDIR}"/chroot/etc/ &>/dev/null
@@ -195,12 +227,6 @@ touch "${DISTDIR}"/logs/chrootlog.log &>/dev/null
 rm "${DISTDIR}"/chroot/tmp/chrootlog.log &>/dev/null
 touch "${DISTDIR}"/chroot/tmp/chrootlog.log &>/dev/null
 rm -f "${DISTDIR}"/chroot/etc/skel/*/{ubukey-assist,quit-chroot,gc}.desktop &>/dev/null
-
-if [[ -n "$console" || -n "$safe" ]]; then
-	cp -f /etc/apt/sources.list "${DISTDIR}"/chroot/etc/apt/ &>/dev/null
-	cp -R -f /etc/apt/sources.list.d "${DISTDIR}"/chroot/etc/apt/ &>/dev/null
-	cp -f /etc/apt/*.gpg "${DISTDIR}"/chroot/etc/apt/ &>/dev/null
-fi
 
 (tail -f "${DISTDIR}"/chroot/tmp/chrootlog.log &) 2>/dev/null & chroot "$DISTDIR"/chroot &> "${DISTDIR}"/logs/chrootlog.log << "EOF"
 
@@ -563,19 +589,19 @@ chown -R root:root /etc/skel
 ## maj kernel et/ou verification
 message "Verifie l'integritee des fichiers vmlinuz/initrd \n"
 
-if [ ! -e "/usr/sbin/update-initramfs" ]; then
-apt-get -y --force-yes install initramfs-tools
+kernel_count=$(ls -al /boot | grep initrd.img | wc | awk '{print $1}')
+
+if [ $kernel_count > 2 ]; then
+list=$(ls /boot | grep initrd.img | sed '$d')
+echo -e "$list" | while read line; do
+ver=$(echo -e $line | sed 's/.*initrd.img-//')
+message "\nSuppression du kernel et headers version $ver \n"
+apt-get remove -y --purge `dpkg -l | grep $ver | awk '{print $2}' | xargs`
+done
 fi
 
-INIT=$(ls -al /initrd.img | sed 's/.*boot\///')
-VMLINUZ=$(ls -al /vmlinuz | sed 's/.*boot\///')
-
-## maj initiale au cas ou 
-if [ ! -e "/vmlinuz" ]; then
-message "mise a jour des sources..."
-apt-get update
-message "\nReinstallation du kernel, patience svp...\n"
-apt-get -y --force-yes install --reinstall linux-headers-generic linux-generic
+if [ ! -e "/usr/sbin/update-initramfs" ]; then
+apt-get -y --force-yes install initramfs-tools
 fi
 
 ## clean en cas de mise a jour du kernel important !!
@@ -594,12 +620,44 @@ rm /*.bak
 rm /*.old
 rm /boot/*.bak
 rm /boot/*.old
-
-initver=$(ls -al /boot/initrd.* | tail -n1 | sed 's/.*boot\/initrd.img-//')
-if [[ -e "/boot/vmlinuz-$initver" && ! -e "/vmlinuz" ]]; then
-ln -s /boot/vmlinuz-$initver /vmlinuz
 fi
 
+## verification des kernels
+
+## 1 liste le kernel le plus a jour installé
+INIT=$(ls -al /boot | grep initrd.img | tail -n1 | sed 's/.*2.6/2.6/')
+VMLINUZ=$(ls -al /boot | grep vmlinuz | tail -n1 | sed 's/.*2.6/2.6/')
+
+## maj initiale au cas ou 
+if [[ ! -e "/vmlinuz" || ! -e "/initrd.img" ]]; then
+if [[ ! `ls /boot | grep vmlinuz` || ! `ls /boot | grep initrd.img` ]]; then
+message "mise a jour des sources..."
+apt-get update
+message "\nReinstallation du kernel, patience svp...\n"
+apt-get -y --force-yes install --reinstall linux-headers-generic linux-generic
+else
+INIT=$(ls /boot | grep initrd.img | tail -n1 | sed 's/.*2.6/2.6/')
+VMLINUZ=$(ls /boot | grep vmlinuz | tail -n1 | sed 's/.*2.6/2.6/')
+ln -s /boot/initrd.img-$INIT /initrd.img
+ln -s /boot/vmlinuz-$VMLINUZ /vmlinuz
+fi
+fi
+
+INIT=$(ls /boot | grep initrd.img | tail -n1 | sed 's/.*2.6/2.6/')
+VMLINUZ=$(ls /boot | grep vmlinuz | tail -n1 | sed 's/.*2.6/2.6/')
+
+## si le lien du kernel n'est pas le bon
+INITLINK=$(ls -al /initrd.img | sed 's/.*2.6/2.6/')
+VMLINUZLINK=$(ls -al /vmlinuz | sed 's/.*2.6/2.6/')
+if [[ $INIT != $INITLINK || $VMLINUZ != $VMLINUZLINK ]]; then
+rm /initrd.img
+rm /vmlinuz
+fi
+
+message "Mise a jour des liens initrd.img et vmlinuz \n"
+if [[ -e "/boot/vmlinuz-$INIT" && ! -e "/vmlinuz" || -e "/boot/initrd.img-$INIT" && ! -e "/initrd.img" ]]; then
+ln -s /boot/vmlinuz-$INIT /vmlinuz
+ln -s /boot/initrd.img-$INIT /initrd.img
 fi
 
 message "Nettoyage de dpkg \n"

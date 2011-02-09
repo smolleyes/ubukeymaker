@@ -10,13 +10,6 @@ xfce4
 gdm
 #slim
 
-# Browser
-#########################
-chromium-browser
-chromium-codecs-ffmpeg-extra
-chromium-browser-l10n
-# firefox
-
 # APT
 #############
 aptitude
@@ -29,9 +22,18 @@ synaptic
 # SYSTEM
 ##############
 ntfs-3g
-ntfs-config
 scrounge-ntfs
-hal
+pciutils
+lsof
+nano
+wireless-tools
+policykit-1-gnome
+policykit-desktop-privileges
+udisks
+software-center
+## for live-cd
+casper
+lupin-casper
 
 # DOCS and locales
 ############

@@ -1,5 +1,6 @@
-ubukey (0.1.6-0ppa1~maverick) maverick; urgency=low
+ubukey (0.1.6-0ppa3~maverick) maverick; urgency=low
 
+  * add ppa gpg key update system
   * fix...
 
  -- Laguillaumie sylvain <s.lagui@free.fr>  Tue, 30 Jan 2011 01:03:03 +0100

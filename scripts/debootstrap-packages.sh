@@ -54,3 +54,10 @@ case $ACTION in
 	;;
 esac
 
+zenity --question \
+--title "Paquets supplémentaires" \
+--text "Voulez vous installer des paquets supplémentaires ?" 
+if [ "$?" != 1 ]; then
+    . $UBUKEYDIR/scripts/debootstrap_packages_chooser.sh
+fi
+

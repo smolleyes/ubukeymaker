@@ -10,17 +10,9 @@ kde-minimal
 kdm
 #slim
 
-# Browser
-#########################
-chromium-browser
-chromium-codecs-ffmpeg-extra
-chromium-browser-l10n
-#firefox
-
 # APT
 #############
 aptitude
-
 
 # BOOT
 #############
@@ -33,10 +25,14 @@ scrounge-ntfs
 pciutils
 lsof
 nano
+software-center
+wireless-tools
+policykit-kde-1
+policykit-desktop-privileges
+udisks
 ## for live-cd
 casper
 lupin-casper
-wireless-tools
 
 # DOCS and locales
 ############
