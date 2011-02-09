@@ -1,17 +1,13 @@
 #!/bin/bash
 
-if [ -e "/usr/share/ubukey" ]; then 
-    UBUKEYDIR="/usr/share/ubukey"
-elif [ -e "/usr/local/share/ubukey" ]; then
-    UBUKEYDIR="/usr/local/share/ubukey"
-fi
-MENU= ''
+MENU=''
+rm /tmp/full_list &>/dev/null
 
 function select_webbrowser(){
 MENU='#!/bin/bash
 zenity --list --checklist \
 --width 800 --height 600 \
---titre "Paquets supplémentaires" \
+--title "Paquets supplémentaires" \
 --text "Choisissez votre navigateur internet:" \
 --column="État" --column "Nom" \
 FALSE firefox \
@@ -25,7 +21,7 @@ function select_mail(){
 MENU='#!/bin/bash
 zenity --list --checklist \
 --width 800 --height 600 \
---titre "Paquets supplémentaires" \
+--title "Paquets supplémentaires" \
 --text "Choisissez votre gestionnaire de courriels:" \
 --column="État" --column "Nom" \
 FALSE thunderbird \
@@ -37,7 +33,7 @@ function select_media(){
 MENU='#!/bin/bash
 zenity --list --checklist \
 --width 800 --height 600 \
---titre "Paquets supplémentaires" \
+--title "Paquets supplémentaires" \
 --text "Choisissez vos lecteurs multimédia:" \
 --column="État" --column "Nom" \
 FALSE rhythmbox \
@@ -53,7 +49,7 @@ function select_textedit(){
 MENU='#!/bin/bash
 zenity --list --checklist \
 --width 800 --height 600 \
---titre "Paquets supplémentaires" \
+--title "Paquets supplémentaires" \
 --text "Choisissez votre éditeur de texte:" \
 --column="État" --column "Nom" \
 FALSE gedit \
@@ -64,18 +60,31 @@ FALSE mousepad \
 '
 }
 
-function install_packages(){
-echo -e "$MENU" | tee /tmp/pchooser &>/dev/null
+function select_archiver() {
+MENU='#!/bin/bash
+zenity --list --checklist \
+--width 800 --height 600 \
+--title "Paquets supplémentaires" \
+--text "Choisissez votre gestionnaire d archives et addons...:" \
+--column="État" --column "Nom" \
+FALSE file-roller \
+FALSE xarchiver \
+FALSE "rar unrar" \
+FALSE "zip unzip" \
+'
+}
 
-sudo chmod +x /tmp/pchooser
+function show_menu(){
+echo -e "$MENU" | tee /tmp/pchooser &>/dev/null
 rm /tmp/List
-bash /tmp/pchooser > /tmp/List
+sudo chmod +x /tmp/pchooser
+bash /tmp/pchooser | tee -a /tmp/List &>/dev/null
 
 list=$(cat /tmp/List | sed 's/|/ /g' | xargs)
-echo $list
+
 case $? in
     0)
-    chroot "$DISTDIR"/chroot aptitude -y install $list
+    echo "$list" | tee -a /tmp/full_list &>/dev/null
     ;;
     1)
     exit 1
@@ -83,11 +92,30 @@ case $? in
 esac
 }
 
+function install_packages(){
+
+list=$(cat /tmp/full_list | sed 's/|/ /g' | xargs)
+echo -e "\nPaquets selectionnes : \n $list"
+case $? in
+    0)
+    chroot "$DISTDIR"/chroot apt-get install -y --force-yes $list
+    ;;
+    1)
+    exit 1
+    ;;
+esac
+rm /tmp/full_list
+
+}
+
 select_webbrowser
-install_packages
+show_menu
 select_mail
-install_packages
+show_menu
 select_media
-install_packages
+show_menu
 select_textedit
+show_menu
+select_archiver
+show_menu
 install_packages
