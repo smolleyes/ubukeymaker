@@ -30,6 +30,7 @@ policykit-1-gnome
 policykit-desktop-privileges
 udisks
 software-center
+wget
 ## for live-cd
 casper
 lupin-casper

@@ -83,7 +83,7 @@ if [ "$i" == "usb" ]; then
 	echo -e "genere les fichiers necessaires a virtualbox pour booter sur usb... \n"
 	vboxmanage createvm -name "test-usb" -basefolder "/tmp/test-usb" -register
 	vboxmanage internalcommands createrawvmdk -filename "/tmp/test-usb/usb.vmdk" -rawdisk "/dev/"$usbdev"1" -register
-	if [[ `echo "$CURDIST" | grep -E "lucid|maverick"` ]]; then
+	if [[ `echo "$CURDIST" | grep -E "lucid|maverick|natty"` ]]; then
 echo "ici"
 		VBoxManage storagectl "test-usb" --name "IDE Controller" --add ide
 		VBoxManage modifyvm "test-usb" --hda "/tmp/test-usb/usb.vmdk" --memory 512 --acpi on --nic1 nat
@@ -94,7 +94,7 @@ echo "ici2"
 	VBoxManage startvm "test-usb" 
 	while [[ `ps aux | grep [V]irtualBox` ]]; do sleep 5; done
 	echo -e "Nettoie la session virtualbox... \n"
-	if [[ `echo "$CURDIST" | grep -E "lucid|maverick"` ]]; then
+	if [[ `echo "$CURDIST" | grep -E "lucid|maverick|natty"` ]]; then
 		VBoxManage modifyvm "test-usb" --hda none
 	else
 		VBoxManage modifyvm "test-usb" --hda none

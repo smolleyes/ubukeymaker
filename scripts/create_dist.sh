@@ -36,6 +36,7 @@ FALSE "Xubuntu-lucid" "Préparer pour xubuntu lucid" \
 FALSE "Xubuntu-lucid-64" "Préparer pour xubuntu lucid 64 bits" \
 FALSE "Ubuntu-netbook-remix" "Préparer pour u.n.r lucid (pour mini-pc)" \
 FALSE "Lubuntu" "Préparer pour lubuntu lucid (lxde)" \
+FALSE "Natty-alpha2" "Préparer pour ubuntu natty alpha 2 (gnome)" \
 FALSE "Custom" "Préparer vos distribution par debootstrap (Expert!)"
 `
 
@@ -137,6 +138,12 @@ case $DISTCHOICE in
 	ISONAME="lubuntu-10.04.iso"
 	MD5SUM="386a227968cbabc89e1a23b95035160e"
 	ISOTYPE="lxde"
+	;;
+	Natty-alpha2)
+	ISOURL="http://cdimage.ubuntu.com/releases/11.04/alpha-2/natty-desktop-i386.iso"
+	ISONAME="natty-desktop-i386.iso"
+	MD5SUM="3185a6c65bc6a197dddc8bbcb8a7e3a6"
+	ISOTYPE="gnome"
 	;;
 	Custom)
 	/bin/bash $UBUKEYDIR/scripts/debootstrap_dist.sh "$WORK"

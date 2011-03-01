@@ -8,6 +8,9 @@ if [ -e "/usr/share/ubukey" ]; then
 UBUKEYDIR="/usr/share/ubukey"
 elif [ -e "/usr/local/share/ubukey" ]; then
 UBUKEYDIR="/usr/local/share/ubukey"
+else ## running .py
+mkdir /usr/share/ubukey
+cp -R 
 fi
 
 if [[ "`uname -m`" == "x86_64" ]]; then
@@ -39,8 +42,10 @@ if [ ! -e "${DISTDIR}"/chroot/usr/share/ubukey ]; then
 mkdir "${DISTDIR}"/chroot/usr/share/ubukey
 fi
 
+if [  -n $UBUKEYDIR ]; then
 rsync -uravH --delete --exclude ".git" --exclude "~" $UBUKEYDIR/. "${DISTDIR}"/chroot/usr/share/ubukey/.
 chmod +x "${DISTDIR}"/chroot/usr/share/ubukey/scripts/*
+fi
 
 sessionType=$(grep -e "distSession" "${DISTDIR}"/config | sed 's/.*distSession=//')
 LOCALUTF=$(env | grep -w "LANG" | sed -e 's/LANG=//' -e 's/.utf8/.UTF-8/g')

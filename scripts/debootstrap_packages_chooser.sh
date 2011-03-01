@@ -94,10 +94,15 @@ esac
 
 function install_packages(){
 
-list=$(cat /tmp/full_list | sed 's/|/ /g' | xargs)
+list=$(cat /tmp/full_list | xargs)
 echo -e "\nPaquets selectionnes : \n $list"
 case $? in
     0)
+    if [[ `echo -e "$list" | grep opera` ]]; then
+    wget -O - http://deb.opera.com/archive.key | apt-key add -
+    echo "deb http://deb.opera.com/opera/ stable non-free" | tee -a "$DISTDIR"/chroot/etc/apt/sources.list.d/opera.list 
+    fi
+    chroot "$DISTDIR"/chroot apt-get update
     chroot "$DISTDIR"/chroot apt-get install -y --force-yes $list
     ;;
     1)

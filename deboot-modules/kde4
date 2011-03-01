@@ -30,6 +30,7 @@ wireless-tools
 policykit-kde-1
 policykit-desktop-privileges
 udisks
+wget
 ## for live-cd
 casper
 lupin-casper

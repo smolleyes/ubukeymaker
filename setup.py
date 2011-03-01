@@ -66,7 +66,7 @@ data_files = [
     'scripts/ubukey-kde4.sh',  'scripts/ubukey-gnome.sh',  'scripts/export_dist.sh',
     'scripts/localiser.sh',  'scripts/scankey.sh',  'scripts/vbox.sh',
     'scripts/ubukey-xfce4.sh',  'scripts/virtualbox.sh',  'scripts/remove_dist.sh',
-    'scripts/debootstrap-packages.sh'
+    'scripts/debootstrap-packages.sh','scripts/debootstrap_packages_chooser.sh'
     ]),
     ('share/ubukey/launchers', ['launchers/gfx',  'launchers/Ubukeymaker.desktop',
     'launchers/wicd',  'launchers/mountrw.sh',  'launchers/sizer',  'launchers/gc.desktop',
