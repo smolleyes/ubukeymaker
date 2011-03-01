@@ -851,7 +851,7 @@ else
 fi
 
 ## ptit check etre sur que ca n est pas un disque dur externe qui est apparu par malchance dans le syslog... 
-chkfstab=`cat /etc/fstab | grep /dev/$usbdev`
+chkfstab=`cat /etc/fstab | grep /dev/$usbdev"1"`
 if [ ! -z "$chkfstab" ]; then
 echo ""
 echo -e "Erreur le disque sélectionné fait partie de fstab,ce script est fait pour des volumes amovibles \
