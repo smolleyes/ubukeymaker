@@ -127,6 +127,10 @@ if [[ ! `mount | grep "custom-usb" | grep umask=000` ]]; then
 fi
 
 ## modifie syslinux.cfg si besoin
+if [ ! -e /media/custom-usb/syslinux.cfg ]; then
+	cp -f /usr/share/ubukey/conf_files/syslinux.cfg /media/custom-usb/syslinux.cfg
+fi
+
 if [ -e "/media/custom-usb/initrd.lz" ]; then
 	sed -i 's/initrd.gz/initrd.lz/g' /media/custom-usb/syslinux.cfg
 	sed -i 's/.utf8/.UTF-8/g' /media/custom-usb/syslinux.cfg
@@ -169,7 +173,6 @@ zenity --info --text "l'image $splash_image est maintenant mise en place"
 if [[ ! `ls /media/custom-usb/ | grep -e "splash"` ]]; then
 cp /usr/share/ubukey/images/splash.jpg /media/custom-usb/
 convert -depth 16 -resize "640x480!" /media/custom-usb/splash.jpg /media/custom-usb/splash.jpg
-sudo cp splash.jpg /media/custom-usb/ &>/dev/null
 sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.jpg/' /media/custom-usb/syslinux.cfg 
 fi
 ;;
