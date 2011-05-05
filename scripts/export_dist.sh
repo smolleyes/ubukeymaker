@@ -133,7 +133,7 @@ if [ -e "/media/custom-usb/initrd.lz" ]; then
 fi
 
 bootdir="/media/custom-usb"
-if [ ! -e "$bootdir/syslinux.sys" ]; then
+if [ ! -e "$bootdir/ldlinux.sys" ]; then
 	echo -e "syslinux va etre installe sur "$bootdir", (disque /dev/"$usbdev") \n"
 	syslinux /dev/$usbdev'1'
 else
@@ -156,7 +156,7 @@ splash_image=$(zenity --file-selection --filename=/home/$USER/ --title "Maintena
 ext=$(echo  $splash_image | sed 's/.*\([^\.]\+\)\.\([^\.]\+\)$/\2/')	
 ## ok on copie l image
 echo -e "Redimensionne l'image "$splash_image" ! \n"
-convert -resize "640x480!" $splash_image -quality "100" splash.$ext
+convert -depth 16 -resize "640x480!" $splash_image -quality "100" splash.$ext
 rm "${DISTDIR}"/splash* &>/dev/null
 sudo cp splash.$ext "${DISTDIR}"
 sudo cp "${DISTDIR}"/splash.$ext /media/custom-usb/
@@ -167,9 +167,8 @@ zenity --info --text "l'image $splash_image est maintenant mise en place"
 
 1) 
 if [[ ! `ls /media/custom-usb/ | grep -e "splash"` ]]; then
-cd "${DISTDIR}"/temp
-testConnect
-wget --quiet http://www.penguincape.org/downloads/scripts/ubukey/images/splash.jpg
+cp /usr/share/ubukey/images/splash.jpg /media/custom-usb/
+convert -depth 16 -resize "640x480!" /media/custom-usb/splash.jpg /media/custom-usb/splash.jpg
 sudo cp splash.jpg /media/custom-usb/ &>/dev/null
 sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.jpg/' /media/custom-usb/syslinux.cfg 
 fi
@@ -377,8 +376,8 @@ else
 			fi
 			cp -f "${DISTDIR}"/chroot/boot/"$VMLINUZ" "${DISTDIR}"/usb/vmlinuz
 		elif [ "$i" == "cdrom" ]; then
-			rm "${DISTDIR}"/cdrom/casper/initrd.*
-			rm "${DISTDIR}"/cdrom/casper/vmlinuz
+			rm "${DISTDIR}"/cdrom/casper/initrd.* &>/dev/null
+			rm "${DISTDIR}"/cdrom/casper/vmlinuz &>/dev/null
 			if [[ -n "$INITLZ" && -e "${DISTDIR}"/chroot/"$INITLZ" ]]; then
 				mv -f "${DISTDIR}"/chroot/"$INITLZ" "${DISTDIR}"/cdrom/casper/initrd.lz
 			else
@@ -601,6 +600,7 @@ case $? in
 esac
 
 echo -e "Creation d un fichier iso, Nettoyage des fichiers... \n"
+	sed -i '/^ui gfxboot/d' "${DISTDIR}"/cdrom/isolinux/isolinux.cfg
 	rm "${DISTDIR}"/cdrom/casper/filesystem* &>/dev/null
 	cd "${DISTDIR}"/cdrom 
 	## copie les fichiers...
@@ -648,7 +648,7 @@ sed -i 's/quiet/union=aufs quiet/g' "${DISTDIR}"/cdrom/isolinux/isolinux.cfg
 	echo -e "Regenere le md5 dans le cdrom \n"
 	find . -type f -print0 |xargs -0 md5sum |tee md5sum.txt
 	cd "${DISTDIR}"
-	rm *.iso
+	rm *.iso &>/dev/null
 	echo ""
 	echo -e "Creation de l iso avec mkisofs ... \n" 
 	sleep 3
@@ -832,6 +832,7 @@ umount /media/extlinux-ro &>/dev/null
 rm -Rf /media/extlinux-ro &>/dev/null
 rm -Rf /media/casper-rw &>/dev/null
 chattr -R -i /media/custom-usb/ldlinux.sys &>/dev/null
+rm /media/custom-usb/ldlinux.sys
 rm -Rf /media/custom-usb &>/dev/null
 mkdir /media/custom-usb &>/dev/null
 ## scan de la cle
@@ -851,7 +852,7 @@ else
 fi
 
 ## ptit check etre sur que ca n est pas un disque dur externe qui est apparu par malchance dans le syslog... 
-chkfstab=`cat /etc/fstab | grep /dev/$usbdev"1"`
+chkfstab=`cat /etc/fstab | grep /dev/$usbdev'1'`
 if [ ! -z "$chkfstab" ]; then
 echo ""
 echo -e "Erreur le disque sélectionné fait partie de fstab,ce script est fait pour des volumes amovibles \

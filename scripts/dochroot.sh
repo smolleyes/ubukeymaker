@@ -596,7 +596,7 @@ message "Verifie l'integritee des fichiers vmlinuz/initrd \n"
 
 kernel_count=$(ls -al /boot | grep initrd.img | wc | awk '{print $1}')
 
-if [ $kernel_count > 2 ]; then
+if [ $kernel_count >= 2 ]; then
 list=$(ls /boot | grep initrd.img | sed '$d')
 echo -e "$list" | while read line; do
 ver=$(echo -e $line | sed 's/.*initrd.img-//')
@@ -639,7 +639,7 @@ if [[ ! `ls /boot | grep vmlinuz` || ! `ls /boot | grep initrd.img` ]]; then
 message "mise a jour des sources..."
 apt-get update
 message "\nReinstallation du kernel, patience svp...\n"
-apt-get -y --force-yes install --reinstall linux-headers-generic linux-generic
+apt-get -y --force-yes install --reinstall linux-headers-generic linux-image-generic
 else
 INIT=$(ls /boot | grep initrd.img | tail -n1 | sed 's/.*2.6/2.6/')
 VMLINUZ=$(ls /boot | grep vmlinuz | tail -n1 | sed 's/.*2.6/2.6/')
@@ -664,6 +664,15 @@ if [[ -e "/boot/vmlinuz-$INIT" && ! -e "/vmlinuz" || -e "/boot/initrd.img-$INIT"
 ln -s /boot/vmlinuz-$INIT /vmlinuz
 ln -s /boot/initrd.img-$INIT /initrd.img
 fi
+
+## recreate initrd.lz file
+mkdir /tmp/tmpdir
+cd /tmp/tmpdir
+cp /boot/initrd.img-$initver .
+gzip -dc initrd.img-$initver | cpio -id
+rm initrd.img*
+find . | cpio --quiet --dereference -o -H newc | lzma -7 > /initrd.lz
+rm -R /tmp/tmpdir
 
 message "Nettoyage de dpkg \n"
 dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null

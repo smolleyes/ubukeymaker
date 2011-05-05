@@ -1,5 +1,5 @@
-ubukey (0.2-0ppa4~lucid) lucid; urgency=low
+ubukey (0.2-0ppa4~natty) natty; urgency=low
 
-  * fix...
+  * add natty package
 
  -- Laguillaumie sylvain <s.lagui@free.fr>  Tue, 30 Jan 2011 01:03:03 +0100

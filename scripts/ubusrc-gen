@@ -28,7 +28,7 @@ fi
 function SCAN()
 {
 case $DIST in
-lucid|maverick)
+lucid|maverick|natty)
 if [ -z "$DIST64" ]; then
 echo -e `color 34 "Ubuntu $DIST (32-bits) detecte...Mise a jour des sources...."` 
 EXTRAS=""
@@ -231,7 +231,7 @@ SCAN
 #sed -i 'G; s/\n/&&/; /^\([ -~]*\n\).*\n\1/d; s/\n//; h; P' /etc/apt/sources.list
 ### efface lignes vides au debut
 sed -i '/./!N;/\n$/D' /etc/apt/sources.list
-
+sed -i '/^deb cdrom/d' /etc/apt/sources.list &>/dev/null
 apt-get update
 echo
 echo `color 32 "Mise a  jour des sources...ok"`
