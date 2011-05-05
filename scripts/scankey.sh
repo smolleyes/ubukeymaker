@@ -9,7 +9,7 @@ usbdev=$(sudo blkid | grep -e "extlinux-ro" | awk '{print $1}' | sed 's/.*\///' 
 if [ -z "$usbdev" ]; then
 
 ## passe a la detection par hal direct....
-devlist=$(hal-device | grep sd | grep block.device | awk '{print $3}' | sed "s/'//g" | sed 's/.*\///g' | sort | tee /tmp/hallist)
+devlist=$(cat /proc/mounts | grep sd | awk '{print $1}' | sed "s/'//g" | sed 's/.*\///g' | sort | tee /tmp/hallist)
 
 (zenity --warning --text "Merci de brancher la clé que vous souhaitez utiliser ...
 
@@ -20,7 +20,7 @@ et rebrancher finalement comme indiqué...
 Cette fenêtre sera fermée automatiquement une fois votre clé détectée." &) 2>/dev/null
 
 while [ -z "$usbdev" ]; do
-		usbscan=$(hal-device | grep sd | grep block.device | awk '{print $3}' | sed "s/'//g" | sed 's/.*\///g' | sort | tee /tmp/usbscan)
+		usbscan=$(cat /proc/mounts | grep sd | awk '{print $1}' | sed "s/'//g" | sed 's/.*\///g' | sort | tee /tmp/usbscan)
 		scan=$(diff -n /tmp/hallist /tmp/usbscan | grep "^sd")
 		scan2=$(diff -n /tmp/usbscan /tmp/hallist | grep "^sd")
 		if [[ -z "$scan" && -z "$scan2" ]]; then
@@ -52,7 +52,7 @@ sur session live-usb, relance l'assistant de détéction de la clé à préparer
 fi
 
 ## sur verif...
-while [[ ! $(hal-device | grep -e "$usbdev") ]]; do
+while [[ ! $(cat /proc/mounts | grep -e "$usbdev") ]]; do
 	echo -e "cle détectée sur /dev/$usbdev, Rebranchez la pour continuer..."
 	sleep 10
 done
