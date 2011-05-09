@@ -64,7 +64,7 @@ mount -t devpts none /dev/pts
 mount -t proc none /proc
 mount -t sysfs none /sys
 apt-get update
-apt-get -y install lsb-release xterm aptitude wget
+apt-get -y install lsb-release xterm aptitude wget zenity
 
 ## generate new sources.list
 chmod +x /usr/share/ubukey/scripts/ubusrc-gen
@@ -117,16 +117,18 @@ for i in $dirlist ; do
 done
 
 ## extract usb and cdrom templates
-echo -e "\nTéléchargement des squelettes pour dossiers cdrom et usb ($CURDIST)\n"
-sleep 5
 cd /tmp
 rm *.tar.gz &>/dev/null
-wget -c http://www.penguincape.org/downloads/scripts/ubukey/deboot-skel/$CURDIST/usb.tar.gz
-wget -c http://www.penguincape.org/downloads/scripts/ubukey/deboot-skel/$CURDIST/cdrom.tar.gz
+echo -e "\nTéléchargement du squelette pour dossier usb"
+curl -C - -O http://www.penguincape.org/downloads/scripts/ubukey/deboot-skel/$CURDIST/usb.tar.gz
+echo -e "\nTéléchargement du squelette pour dossier cdrom"
+curl -C - -O http://www.penguincape.org/downloads/scripts/ubukey/deboot-skel/$CURDIST/cdrom.tar.gz
 
-echo -e "\nExtraction et mise en place... \n"
+echo -e "\nExtraction et mise en place..."
+
 mkdir "$DISTDIR"/cdrom
 mkdir "$DISTDIR"/usb
+
 tar xvf cdrom.tar.gz -C "${DISTDIR}"/cdrom &>/dev/null
 tar xvf usb.tar.gz -C "${DISTDIR}"/usb &>/dev/null
 
@@ -137,3 +139,4 @@ createEnv
 base_debootstrap
 
 echo -e "\nDebootstrap terminé ! \n"
+

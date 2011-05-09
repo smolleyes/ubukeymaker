@@ -56,8 +56,11 @@ class Distribs(object):
         print "updating distrib list..."
         self.parser = Parser(self.ini)
         for dir in dist_list:
-            dist_name = os.path.basename(dir)
             dist_conf = os.path.join(dir,'config')
+            if not os.path.exists(dist_conf):
+                print "no config file found : %s" % dist_conf
+                continue
+            dist_name = os.path.basename(dir)
             if not self.parser.has_section(dist_name):
                 self.parser.add_section(dist_name)
                 dist_parser = Parser(dist_conf)
