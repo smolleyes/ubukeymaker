@@ -72,9 +72,6 @@ data_files = [
     'launchers/wicd',  'launchers/mountrw.sh',  'launchers/sizer',  'launchers/gc.desktop',
     'launchers/ubukey.desktop'
     ]),
-    ('share/ubukey/addons/lucid/lxde', ['addons/lucid/lxde/codecs-gstreamer.sh']),
-    ('share/ubukey/addons/lucid/gnome', ['addons/lucid/gnome/codecs-gstreamer.sh']),
-    ('share/ubukey/addons/lucid/xfce4', ['addons/lucid/xfce4/codecs-gstreamer.sh']),
     ('share/ubukey/addons/all', ['addons/all/fix-tty.sh',  'addons/all/compiz-smo.sh',
     'addons/all/utilisateur-live.sh', 'addons/all/installer.sh',  'addons/all/clone-pkglist.sh',
     'addons/all/Wicd.sh', 'addons/all/live-homerw.sh'
@@ -82,6 +79,9 @@ data_files = [
     ('share/ubukey/addons/maverick/lxde', ['addons/maverick/lxde/codecs-gstreamer.sh']),
     ('share/ubukey/addons/maverick/gnome', ['addons/maverick/gnome/codecs-gstreamer.sh']),
     ('share/ubukey/addons/maverick/xfce4', ['addons/maverick/xfce4/codecs-gstreamer.sh']),
+    ('share/ubukey/addons/natty/lxde', ['addons/natty/lxde/codecs-gstreamer.sh']),
+    ('share/ubukey/addons/natty/gnome', ['addons/natty/gnome/codecs-gstreamer.sh']),
+    ('share/ubukey/addons/natty/xfce4', ['addons/natty/xfce4/codecs-gstreamer.sh']),
 ]
 
 

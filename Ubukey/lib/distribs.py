@@ -6,6 +6,7 @@ from constants import *
 from functions import *
 import time
 from subprocess import Popen, PIPE
+import fnmatch
 
 class NoSourceError(Exception): pass
 
@@ -77,6 +78,13 @@ class Distribs(object):
         0, dist,
         1, os.path.join(self.main_dist_path,'distribs',dist),
         )
+        
+    def add_plugin_model(self,name,path):
+        self.iter = self.gui.plugins_model.append()
+        self.gui.plugins_model.set(self.iter,
+        0, name,
+        1, path,
+        )
     
     def new_dist(self):
         self.create_script = os.path.join(scripts_path,'create_dist.sh')
@@ -123,6 +131,16 @@ class Distribs(object):
                                                              self.main_dist_path))
         self.update_list()
         
-    
+    def options_dialog(self):
+		optwin = self.gui.opt_dialog
+		optwin.set_position("center")
+		self.gui.plugins_model.clear()
+		for root, dirnames, filenames in os.walk(os.path.join(self.main_dist_path,'addons/custom')):
+			for filename in fnmatch.filter(filenames, '*.sh'):
+				self.add_plugin_model(filename, root)
+		self.gui.plug_scroll.show_all()
+		response = optwin.run()
+		if response == gtk.RESPONSE_DELETE_EVENT or response == gtk.RESPONSE_CANCEL:
+			optwin.hide()
         
                                 

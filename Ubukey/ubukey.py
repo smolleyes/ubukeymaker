@@ -25,6 +25,7 @@ class Ubukey_gui(object):
             exit()
         ## set the gladexml file
         self.gladexml = gtk.glade.XML(GLADE_FILE, None ,APP_NAME)
+        self.opt_dialog = self.gladexml.get_widget("options_dialog")
         self.selected_dist = None
         ## the main window and properties
         self.window = self.gladexml.get_widget("main_window")
@@ -64,6 +65,26 @@ class Ubukey_gui(object):
         self.dist_scroll.add(self.distTree)
         self.distTree.connect('cursor-changed',self.get_selected_dist)
 
+        ## plugins list treeview
+        self.plug_scroll = self.gladexml.get_widget("plug_scroll")
+        self.plugins_model = gtk.ListStore(str, str)
+
+        self.plugTree = gtk.TreeView()
+        self.plugTree.set_model(self.plugins_model)
+        renderer = gtk.CellRendererText()
+        titleColumn = gtk.TreeViewColumn("Name", renderer, text=0)
+        titleColumn.set_min_width(200)
+        pathColumn = gtk.TreeViewColumn()
+
+        self.plugTree.append_column(titleColumn)
+        self.plugTree.append_column(pathColumn)
+        
+        columns = self.plugTree.get_columns()
+        columns[0].set_sort_column_id(1)
+        columns[1].set_visible(0)
+        self.plug_scroll.add(self.plugTree)
+        self.plugTree.connect('cursor-changed',self.get_selected_plug)
+
         ## add socket for Xephyr
         self.socket = gtk.Socket()
         self.socket.show()
@@ -78,6 +99,7 @@ class Ubukey_gui(object):
                "on_vbox_btn_clicked" : self.start_vbox,
                "on_bootcd_btn_clicked" : self.gen_bootcd,
                "on_clone_btn_clicked" : self.clone_dist,
+               "on_options_btn_clicked" : self.options_dialog,
                }
         
         self.gladexml.signal_autoconnect(dic)
@@ -131,6 +153,15 @@ class Ubukey_gui(object):
         if session and not session == "":
             img = os.path.join(data_path,"images/logo_%s.png" % session)
             self.distlogo.set_from_file(img)
+    
+    def get_selected_plug(self,widget=None):
+        """return the path of the selected dist in the gui treeview"""
+        selected = self.plugTree.get_selection()
+        self.plug_iter = selected.get_selected()[1]
+        ## else extract needed metacity's infos
+        self.selected_plug = self.plugins_model.get_value(self.plug_iter, 0)
+        self.selected_plug_path = os.path.join(self.plugins_model.get_value(self.plug_iter, 1),self.selected_plug)
+        print self.selected_plug_path
         
     def set_startdist_btn_state(self,widget):
         if self.run_btn_state == "stopped":
@@ -164,6 +195,9 @@ class Ubukey_gui(object):
         
     def clone_dist(self,widget):
         self.distribs.clone_dist()
+        
+    def options_dialog(self,widget):
+		self.distribs.options_dialog()
         
     def exit(self,window=None,event=None):
         os.system('killall -9 Xephyr')

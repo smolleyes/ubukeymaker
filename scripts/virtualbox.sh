@@ -34,7 +34,7 @@ function qemuBuild()
 if [ ! -e "/usr/bin/vboxsdl" ]; then
 	testConnect
 	echo -e "installation de virtualbox-ose...\n"
-	aptitude -y install virtualbox-ose
+	apt-get -y install virtualbox-ose
 fi
 
 echo -e "Installation de virtualbox ok ! \n"
@@ -69,7 +69,7 @@ sleep 1
 CURDIST=$(lsb_release -cs)
 
 rm -R /tmp/test-usb &>/dev/null
-rm -R /tmp/test-iso &>/dev/Null
+rm -R /tmp/test-iso &>/dev/null
 rm -R /root/.VirtualBox &>/dev/null
 
 ## loop check cd/usb
@@ -81,8 +81,8 @@ if [ "$i" == "usb" ]; then
 	fi
 	
 	echo -e "genere les fichiers necessaires a virtualbox pour booter sur usb... \n"
-	vboxmanage createvm -name "test-usb" -basefolder "/tmp/test-usb" -register
-	vboxmanage internalcommands createrawvmdk -filename "/tmp/test-usb/usb.vmdk" -rawdisk "/dev/"$usbdev"1" -register
+	vboxmanage createvm -name "test-usb" -basefolder "/tmp" -register
+	vboxmanage internalcommands createrawvmdk -filename "/tmp/test-usb/usb.vmdk" -rawdisk "/dev/"$usbdev"1"
 	if [[ `echo "$CURDIST" | grep -E "lucid|maverick|natty"` ]]; then
 echo "ici"
 		VBoxManage storagectl "test-usb" --name "IDE Controller" --add ide

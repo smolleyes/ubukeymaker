@@ -16,7 +16,7 @@ def checkConf():
             listdir = ("distribs","isos","temp","addons/lucid",
                        "addons/lucid/gnome","addons/lucid/kde4",
                        "addons/lucid/xfce4","addons/lucid/lxde",
-                       "addons/perso","addons/maverick",
+                       "addons/custom","addons/maverick",
                        "addons/maverick/gnome","addons/maverick/kde4",
                        "addons/maverick/xfce4","addons/maverick/lxde",
                        "addons/custom","addons/all")
@@ -35,7 +35,7 @@ def checkConf():
             path = FirstRun()
             return generate_config(path)
         if not os.access(main_dist_path, os.R_OK):
-            error_dialog("Votre dossier de distributions :\n%s \nn'est pas accessible, pas montÃ© ou supprimÃ© (recrÃ©ez le)..." % main_dist_path)
+            error_dialog("Votre dossier de distributions :\n%s \nn'est pas accessible, pas monte ou supprime (recreez le)..." % main_dist_path)
             sys.exit()
             
 ## LOGS

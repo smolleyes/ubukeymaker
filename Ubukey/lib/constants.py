@@ -12,7 +12,9 @@ if ('/usr/local' in exec_path):
 elif ('/usr' in exec_path):
     data_path = os.path.join(exec_path,"/usr/share/ubukey")
 else:
-    data_path = os.path.join("../")
+    data_path = os.path.dirname(os.path.dirname(exec_path))
+
+print data_path
 
 glade_path = os.path.join(data_path,"data/glade")
 GLADE_FILE = os.path.join(glade_path,'gui.glade')
@@ -22,13 +24,7 @@ conf_file = os.path.join(conf_path,'config')
 distribs_ini = os.path.join(conf_path,'distribs.ini')
 glade_path = os.path.join(data_path,"data/glade")
 GLADE_FILE = os.path.join(glade_path,'gui.glade')
-
-
-
-#if ('/usr' in exec_path):
 scripts_path=os.path.join(data_path,'scripts')
-#else:
-#    scripts_path=os.path.join(os.path.dirname(exec_path),'scripts')
 
 ## log settings
 LOG=os.path.join(HOME,'.config/ubukey/logs/log')

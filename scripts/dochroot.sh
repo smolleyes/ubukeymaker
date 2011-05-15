@@ -637,6 +637,9 @@ VMLINUZ=$(ls -al /boot | grep vmlinuz | tail -n1 | sed 's/.*2.6/2.6/')
 if [[ ! -e "/vmlinuz" || ! -e "/initrd.img" ]]; then
 if [[ ! `ls /boot | grep vmlinuz` || ! `ls /boot | grep initrd.img` ]]; then
 message "mise a jour des sources..."
+apt-get clean &>/dev/null
+## nettoie fichiers desinstalles mais pas la conf donc toujours apparents
+dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null 
 apt-get update
 message "\nReinstallation du kernel, patience svp...\n"
 apt-get -y --force-yes install --reinstall linux-headers-generic linux-image-generic
