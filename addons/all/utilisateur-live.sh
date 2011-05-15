@@ -345,4 +345,4 @@ zenity --info --text "Setup utilisateur terminé...
 
 L'utilisateur \""$USER_LIVEUSB"\" est désormais actif sur votre live-cd !\n"
 
-kill -9 `ps aux | grep -e [x]term | grep -e "/usr/share/ubukey/addons" | awk '{print $2}' | xargs`
+kill -9 `ps aux | grep -e "hold" | grep -e [x]term | grep -e "/usr/share/ubukey/addons" | awk '{print $2}' | xargs`

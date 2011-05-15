@@ -29,4 +29,4 @@ sleep 5
 zenity --info --title "Fin de l'installation" \
 --text "Opérations terminées, validez pour continuer."
 
-kill -9 `ps aux | grep -e [x]term | grep -e "/usr/share/ubukey/addons" | awk '{print $2}' | xargs`
+kill -9 `ps aux | grep -e "hold" | grep -e [x]term | grep -e "/usr/share/ubukey/addons" | awk '{print $2}' | xargs`

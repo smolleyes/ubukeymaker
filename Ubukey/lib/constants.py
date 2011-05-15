@@ -14,8 +14,6 @@ elif ('/usr' in exec_path):
 else:
     data_path = os.path.dirname(os.path.dirname(exec_path))
 
-print data_path
-
 glade_path = os.path.join(data_path,"data/glade")
 GLADE_FILE = os.path.join(glade_path,'gui.glade')
 img_path = os.path.join(data_path,"img")
