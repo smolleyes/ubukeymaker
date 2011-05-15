@@ -9,8 +9,7 @@ UBUKEYDIR="/usr/share/ubukey"
 elif [ -e "/usr/local/share/ubukey" ]; then
 UBUKEYDIR="/usr/local/share/ubukey"
 else ## running .py
-mkdir /usr/share/ubukey
-cp -R 
+UBUKEYDIR="$(pwd)/../.."
 fi
 
 if [[ "`uname -m`" == "x86_64" ]]; then
@@ -42,8 +41,12 @@ if [ ! -e "${DISTDIR}"/chroot/usr/share/ubukey ]; then
 mkdir "${DISTDIR}"/chroot/usr/share/ubukey
 fi
 
-if [  -n $UBUKEYDIR ]; then
-rsync -uravH --delete --exclude ".git" --exclude "~" $UBUKEYDIR/. "${DISTDIR}"/chroot/usr/share/ubukey/.
+if [  -n "$UBUKEYDIR" ]; then
+rsync -uravH --delete --exclude ".git" --exclude "~" "$UBUKEYDIR"/. "${DISTDIR}"/chroot/usr/share/ubukey/.
+if [ ! -e "${DISTDIR}"/chroot/usr/share/ubukey/addons/custom ]; then
+mkdir -p "${DISTDIR}"/chroot/usr/share/ubukey/addons/custom
+fi
+rsync -uravH --delete --exclude ".git" --exclude "~" "$(dirname $DISTDIR)"/../addons/custom/. "${DISTDIR}"/chroot/usr/share/ubukey/addons/custom/.
 chmod +x "${DISTDIR}"/chroot/usr/share/ubukey/scripts/*
 fi
 
