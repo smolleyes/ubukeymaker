@@ -104,6 +104,7 @@ class Ubukey_gui(object):
                "on_new_plug_btn_clicked" : self.create_plug,
                "on_edit_plug_btn_clicked" : self.edit_plug,
                "on_del_plug_btn_clicked" : self.delete_plug,
+               "on_refresh_plug_btn_clicked" : self.options_dialog,
                }
         
         self.gladexml.signal_autoconnect(dic)

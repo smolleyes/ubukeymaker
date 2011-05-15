@@ -37,6 +37,8 @@ def checkConf():
         if not os.access(main_dist_path, os.R_OK):
             error_dialog("Votre dossier de distributions :\n%s \nn'est pas accessible, pas monte ou supprime (recreez le)..." % main_dist_path)
             sys.exit()
+        if not os.path.exists(os.path.join(main_dist_path,'addons/custom')):
+			os.mkdir(os.path.join(main_dist_path,'addons/custom'))
             
 ## LOGS
 if not path_exist(LOGDIR):

@@ -7,6 +7,7 @@ from functions import *
 import time
 from subprocess import Popen, PIPE
 import fnmatch
+import gobject
 
 class NoSourceError(Exception): pass
 
@@ -132,16 +133,16 @@ class Distribs(object):
         self.update_list()
         
     def options_dialog(self):
-		optwin = self.gui.opt_dialog
-		optwin.set_position("center")
+		self.optwin = self.gui.opt_dialog
+		self.optwin.set_position("center")
 		self.gui.plugins_model.clear()
 		for root, dirnames, filenames in os.walk(os.path.join(self.main_dist_path,'addons/custom')):
 			for filename in fnmatch.filter(filenames, '*.sh'):
 				self.add_plugin_model(filename, root)
 		self.gui.plug_scroll.show_all()
-		response = optwin.run()
+		response = self.optwin.run()
 		if response == gtk.RESPONSE_DELETE_EVENT or response == gtk.RESPONSE_CANCEL:
-			optwin.hide()
+			self.optwin.hide()
 			
     def delete_plug(self):
 		try:
@@ -174,9 +175,19 @@ DESCRIPTION=""
 # Your code here...
 
 
-''' )
-		os.system('xdg-open %s' % os.path.join(self.main_dist_path,'addons/custom/new.sh'))
+''')
+		plug.close()
+		self.optwin.hide()
+		nfile = os.path.join(self.main_dist_path,'addons/custom/new.sh')
+		try:
+			(pid,t,r,s) = gobject.spawn_async(['/usr/bin/xdg-open', nfile],flags=gobject.SPAWN_DO_NOT_REAP_CHILD,standard_output = True, standard_error = True)
+		except:
+			return
+		data=(nfile)
+		gobject.child_watch_add(pid, self.task_done,data)
 		
+    def task_done(self,pid,ret,data):
+		self.options_dialog()
 		
     def edit_plug(self):
 		print "edit the plugin %s " % self.gui.selected_plug_path
