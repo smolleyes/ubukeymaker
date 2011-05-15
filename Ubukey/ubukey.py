@@ -84,7 +84,8 @@ class Ubukey_gui(object):
         columns[1].set_visible(0)
         self.plug_scroll.add(self.plugTree)
         self.plugTree.connect('cursor-changed',self.get_selected_plug)
-
+        
+        
         ## add socket for Xephyr
         self.socket = gtk.Socket()
         self.socket.show()
@@ -100,6 +101,9 @@ class Ubukey_gui(object):
                "on_bootcd_btn_clicked" : self.gen_bootcd,
                "on_clone_btn_clicked" : self.clone_dist,
                "on_options_btn_clicked" : self.options_dialog,
+               "on_new_plug_btn_clicked" : self.create_plug,
+               "on_edit_plug_btn_clicked" : self.edit_plug,
+               "on_del_plug_btn_clicked" : self.delete_plug,
                }
         
         self.gladexml.signal_autoconnect(dic)
@@ -161,7 +165,6 @@ class Ubukey_gui(object):
         ## else extract needed metacity's infos
         self.selected_plug = self.plugins_model.get_value(self.plug_iter, 0)
         self.selected_plug_path = os.path.join(self.plugins_model.get_value(self.plug_iter, 1),self.selected_plug)
-        print self.selected_plug_path
         
     def set_startdist_btn_state(self,widget):
         if self.run_btn_state == "stopped":
@@ -198,6 +201,15 @@ class Ubukey_gui(object):
         
     def options_dialog(self,widget):
 		self.distribs.options_dialog()
+
+    def create_plug(self,widget):
+		self.distribs.create_plug()
+
+    def delete_plug(self,widget):
+		self.distribs.delete_plug()
+	
+    def edit_plug(self,widget):
+		self.distribs.edit_plug()
         
     def exit(self,window=None,event=None):
         os.system('killall -9 Xephyr')

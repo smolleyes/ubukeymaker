@@ -686,13 +686,14 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <widget class="GtkButton" id="button2">
+                          <widget class="GtkButton" id="del_plug_btn">
                             <property name="label">gtk-clear</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
                             <property name="use_stock">True</property>
+                            <signal name="clicked" handler="on_del_plug_btn_clicked" swapped="no"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -702,13 +703,14 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkButton" id="button4">
+                          <widget class="GtkButton" id="edit_plug_btn">
                             <property name="label">gtk-edit</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
                             <property name="use_stock">True</property>
+                            <signal name="clicked" handler="on_edit_plug_btn_clicked" swapped="no"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -718,13 +720,14 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkButton" id="button5">
-                            <property name="label">gtk-add</property>
+                          <widget class="GtkButton" id="new_plug_btn">
+                            <property name="label">gtk-new</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
                             <property name="use_stock">True</property>
+                            <signal name="clicked" handler="on_new_plug_btn_clicked" swapped="no"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -779,6 +782,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="pack_type">end</property>
             <property name="position">1</property>
           </packing>
         </child>

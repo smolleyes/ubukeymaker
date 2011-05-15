@@ -1,6 +1,6 @@
-ubukey (0.2.1-0ppa1~natty) natty; urgency=low
+ubukey (0.2.1-0ppa3~natty) natty; urgency=low
 
-  * fix debootstrap
-  * add dependencies
+  * fix virtualbox with usb
+  * gui add....
 
  -- Laguillaumie sylvain <s.lagui@free.fr>  Tue, 30 Jan 2011 01:03:03 +0100

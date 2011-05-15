@@ -142,5 +142,43 @@ class Distribs(object):
 		response = optwin.run()
 		if response == gtk.RESPONSE_DELETE_EVENT or response == gtk.RESPONSE_CANCEL:
 			optwin.hide()
-        
+			
+    def delete_plug(self):
+		try:
+			print "removing the plugin %s " % self.gui.selected_plug_path
+			os.remove(self.gui.selected_plug_path)
+			self.gui.plugins_model.remove(self.gui.plug_iter)
+		except:
+			return
+		
+    def create_plug(self):
+		print "creating new plugin..."
+		plug = open(os.path.join(self.main_dist_path,'addons/custom/new.sh'), "w")
+		plug.write ('''#!/bin/bash
+###########
+#
+# Note:
+# -----
+# please always use "xterm -e" and/or zenity 
+# to start/show your scripts 
+#
+###########
+#
+# Please add a description here, it will be viewable in the 
+# ubukey addons manager under the chroot ! 
+
+DESCRIPTION=""
+
+############
+#
+# Your code here...
+
+
+''' )
+		os.system('xdg-open %s' % os.path.join(self.main_dist_path,'addons/custom/new.sh'))
+		
+		
+    def edit_plug(self):
+		print "edit the plugin %s " % self.gui.selected_plug_path
+		os.system('xdg-open %s' % self.gui.selected_plug_path)
                                 
