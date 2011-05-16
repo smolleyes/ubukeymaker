@@ -54,4 +54,4 @@ case $? in
 	;;
 esac
 
-kill -9 `ps aux | grep -e "root" | grep -e [x]term | grep -e "/usr/local/bin/ubukey-addons" | awk '{print $2}' | xargs`
+kill -9 `ps aux | grep -e "hold" | grep -e [x]term | grep -e "/usr/share/ubukey/addons" | awk '{print $2}' | xargs`

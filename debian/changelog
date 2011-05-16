@@ -1,6 +1,6 @@
-ubukey (0.2.2-0ppa3~natty) natty; urgency=high
+ubukey (0.2.2-0ppa4~natty) natty; urgency=high
 
   * add basic custom plugins management system
-  * fix 
+  * update/fix chroot plugins 
 
  -- Laguillaumie sylvain <s.lagui@free.fr>  Tue, 30 Jan 2011 01:03:03 +0100
