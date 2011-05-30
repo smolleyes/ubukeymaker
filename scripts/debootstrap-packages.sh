@@ -10,12 +10,12 @@ session=$1
 echo -e "Installation des paquets pour $session \n"
 lang=$(env | grep -w "LANG" | sed -e 's/\..*//;s/LANG=//;s/_.*//')
 . $UBUKEYDIR/deboot-modules/$session
-chroot "$DISTDIR"/chroot aptitude -y install --without-recommends `echo -e "$packages" | sed -e '/^#/d' | xargs`
+chroot "$DISTDIR"/chroot apt-get -y --force-yes install --without-recommends `echo -e "$packages" | sed -e '/^#/d' | xargs`
 
 ## extra-packages (install with recommends)
 if [ $session = "gnome" ]; then
-	chroot "$DISTDIR"/chroot aptitude -y install indicator-session indicator-applet-session gnome-media alacarte network-manager gvfs-backends gvfs-bin gvfs-fuse plymouth plymouth-theme-ubuntu-logo plymouth-theme-ubuntu-text 
-	chroot "$DISTDIR"/chroot apt-get remove -y --force-yes gwibber ubuntuone*
+	chroot "$DISTDIR"/chroot apt-get -y --force-yes install indicator-session indicator-applet-session gnome-media alacarte network-manager gvfs-backends gvfs-bin gvfs-fuse plymouth plymouth-theme-ubuntu-logo plymouth-theme-ubuntu-text 
+	chroot "$DISTDIR"/chroot apt-get remove -y gwibber ubuntuone*
 fi 
 ##
 

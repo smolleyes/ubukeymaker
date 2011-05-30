@@ -144,7 +144,7 @@ class Ubukey_gui(object):
         os.system('killall -9 Xephyr')
         cmd = "Xephyr :5 -title ubukey-xephyr \
         -ac -s 120 \
-        -keybd ephyr,,xkblayout=%s,xkbmodel=evdev -parent %s & sleep 4 " % (LANG,xid)
+        -keybd ephyr,,xkbrules=evdev,xkbmodel=evdev,xkblayout=%s,xkbvariant=oss -parent %s & sleep 4" % (LANG,xid)
         self.xephyr_pipe = Popen(cmd,shell=True)
         
     def get_selected_dist(self,widget):

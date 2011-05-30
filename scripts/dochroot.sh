@@ -438,16 +438,16 @@ Icon=/usr/share/pixmaps/usbkey.png" | tee /etc/skel/"$deskdir"/ubukey-assist.des
 
 chmod +x /etc/skel/"$deskdir"/ubukey-assist.desktop
 
-echo "[Desktop Entry]
-Type=Application
-Encoding=UTF-8
-Version=1.0
-Name=fix-clavier
-Name[fr_FR]=fix-clavier
-Comment[fr_FR]=fix-clavier
-Comment=fix-clavier
-Exec=setxkbmap $LOCALSIMPLE
-X-GNOME-Autostart-enabled=true" | tee /etc/xdg/autostart/fix-clavier.desktop &>/dev/null
+#echo "[Desktop Entry]
+#Type=Application
+#Encoding=UTF-8
+#Version=1.0
+#Name=fix-clavier
+#Name[fr_FR]=fix-clavier
+#Comment[fr_FR]=fix-clavier
+#Comment=fix-clavier
+#Exec=setxkbmap $LOCALSIMPLE
+#X-GNOME-Autostart-enabled=true" | tee /etc/xdg/autostart/fix-clavier.desktop &>/dev/null
 
 ## icone partage
 #cp -f $UBUKEYDIR/launchers/gc.desktop /etc/skel/"$deskdir"

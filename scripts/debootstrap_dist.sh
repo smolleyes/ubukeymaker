@@ -9,6 +9,8 @@ elif [ -e "/usr/local/share/ubukey" ]; then
 UBUKEYDIR="/usr/local/share/ubukey"
 fi
 
+export TERM=linux
+
 function distName {
 choix=`zenity --width=350 --height=80 --title "Nom du projet" --text "Indiquez un nom pour votre projet 
 
@@ -46,6 +48,7 @@ if [[ `mount | grep "$WORK" | grep -E '(ntfs|vfat|nosuid|noexec|nodev)'` ]]; the
 	exit 0
 fi
 
+export TERM=linux
 debootstrap --keep-debootstrap-dir --arch i386 $CURDIST "$DISTDIR"/chroot http://archive.ubuntu.com/ubuntu/
 
 ## send ubukey scripts
@@ -73,7 +76,7 @@ chmod +x /usr/share/ubukey/scripts/ubusrc-gen
 EOF
 
 ## start modules manager
-. $UBUKEYDIR/scripts/debootstrap-packages.sh
+. $UBUKEYDIR/scripts/debootstrap-packages.sh | tee /tmp/ubu
 
 ## clean chroot
 chroot "$DISTDIR"/chroot << EOF

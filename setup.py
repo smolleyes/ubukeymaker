@@ -72,9 +72,9 @@ data_files = [
     'launchers/wicd',  'launchers/mountrw.sh',  'launchers/sizer',  'launchers/gc.desktop',
     'launchers/ubukey.desktop'
     ]),
-    ('share/ubukey/addons/all', ['addons/all/fix-tty.sh',  'addons/all/compiz-smo.sh',
+    ('share/ubukey/addons/all', ['addons/all/fix-tty.sh',
     'addons/all/utilisateur-live.sh', 'addons/all/installer.sh',  'addons/all/clone-pkglist.sh',
-    'addons/all/Wicd.sh', 'addons/all/live-homerw.sh'
+    'addons/all/live-homerw.sh'
     ]),
     ('share/ubukey/addons/maverick/lxde', ['addons/maverick/lxde/codecs-gstreamer.sh']),
     ('share/ubukey/addons/maverick/gnome', ['addons/maverick/gnome/codecs-gstreamer.sh']),
