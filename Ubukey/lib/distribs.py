@@ -99,9 +99,9 @@ class Distribs(object):
         if quest == "No":
             return
         self.remove_script = os.path.join(scripts_path,'remove_dist.sh')
-        self.gui.vt.run_command('gksu /bin/bash %s %s %s' % (self.remove_script,
+        self.gui.vt.run_command('gksu /bin/bash %s %s %s %s' % (self.remove_script,
                                                           self.gui.selected_dist,
-                                                          self.gui.selected_dist_path))
+                                                          self.gui.selected_dist_path, self.username))
         self.parser.remove_section(self.gui.selected_dist)
         write_ini(self.parser,self.ini)
         self.gui.dist_model.remove(self.gui.dist_iter)
