@@ -36,7 +36,7 @@ FALSE "Xubuntu-lucid" "Préparer pour xubuntu lucid" \
 FALSE "Xubuntu-lucid-64" "Préparer pour xubuntu lucid 64 bits" \
 FALSE "Ubuntu-netbook-remix" "Préparer pour u.n.r lucid (pour mini-pc)" \
 FALSE "Lubuntu" "Préparer pour lubuntu lucid (lxde)" \
-FALSE "Natty-daily" "Préparer pour ubuntu natty daily (gnome)" \
+FALSE "Oneiric-daily" "Préparer pour ubuntu oneiric daily (gnome)" \
 FALSE "Custom" "Préparer vos distribution par debootstrap (Expert!)"
 `
 
@@ -139,10 +139,13 @@ case $DISTCHOICE in
 	MD5SUM="386a227968cbabc89e1a23b95035160e"
 	ISOTYPE="lxde"
 	;;
-	Natty-daily)
-	ISOURL="http://cdimage.ubuntu.com/daily-live/current/natty-desktop-i386.iso"
-	ISONAME="natty-desktop-i386.iso"
-	MD5SUM="3185a6c65bc6a197dddc8bbcb8a7e3a6"
+	Oneiric-daily)
+	ISOURL="http://cdimage.ubuntu.com/daily-live/current/oneiric-desktop-i386.iso"
+	ISONAME="oneiric-desktop-i386.iso"
+    cd /tmp
+    rm MD5* >/dev/null
+    wget http://cdimage.ubuntu.com/daily-live/current/MD5SUMS
+    MD5SUM=$(cat MD5SUMS | grep desktop-i386 | awk '{print $1}')
 	ISOTYPE="gnome"
 	;;
 	Custom)

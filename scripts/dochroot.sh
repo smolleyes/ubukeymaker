@@ -21,18 +21,18 @@ function prepareChroot()
 echo "${DISTDIR}"/chroot/etc/lsb-release
 CHROOTVER=$(cat "${DISTDIR}"/chroot/etc/lsb-release | awk -F= '/CODENAME/ {print $2}')
 
-## return if not the same distro...
-if [ "${CURDIST}" != "$CHROOTVER" ]; then
-	zenity --error --text "Désolé, vous êtes actuellement sur une distribution \"${CURDIST}\" 
-et vous préparez une distrib $CHROOTVER.
+### return if not the same distro...
+#if [ "${CURDIST}" != "$CHROOTVER" ]; then
+	#zenity --error --text "Désolé, vous êtes actuellement sur une distribution \"${CURDIST}\" 
+#et vous préparez une distrib $CHROOTVER.
 
-Pour des raisons de sécurité et de conflits potentiels, ceci
-n'est pas supporté.
+#Pour des raisons de sécurité et de conflits potentiels, ceci
+#n'est pas supporté.
 
-réutilisez la même image si vous le souhaitez, mais depuis une version \"$CHROOTVER\".
-"
-exit 1
-fi
+#réutilisez la même image si vous le souhaitez, mais depuis une version \"$CHROOTVER\".
+#"
+#exit 1
+#fi
 
 echo -e "Préparation du chroot, merci de patienter... \n"
 
@@ -645,6 +645,7 @@ apt-get clean &>/dev/null
 dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null 
 apt-get update
 message "\nReinstallation du kernel, patience svp...\n"
+apt-get remove --purge -y linux-headers* linux-image*
 apt-get -y --force-yes install --reinstall linux-headers-generic linux-image-generic
 else
 INIT=$(ls /boot | grep initrd.img | tail -n1 | sed 's/.*2.6/2.6/')
