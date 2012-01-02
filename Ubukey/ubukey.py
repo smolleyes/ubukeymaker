@@ -37,6 +37,9 @@ class Ubukey_gui(object):
         self.run_btn_label = self.gladexml.get_widget("run_btn_label")
         self.run_btn_img = self.gladexml.get_widget("run_btn_img")
         self.run_btn_state = "stopped"
+        
+        # notebooik
+        self.notebook = self.gladexml.get_widget('notebook1')
         ## vbox btn
         self.vbox_img = self.gladexml.get_widget('vbox_img')
         img = gtk.gdk.pixbuf_new_from_file_at_scale(os.path.join(data_path,'images/vbox.png'), 24, 24, 1)

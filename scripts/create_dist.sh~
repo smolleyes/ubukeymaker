@@ -16,7 +16,7 @@ function create_dist()
 
 ## check ubukey link
 if [ ! -e "/usr/share/ubukey" ]; then
-   ln -s "$(pwd)/.." /usr/share/ubukey
+   ln -s "$(pwd)/.."
 fi
 
 ## menu selection choix distrib a preparer 

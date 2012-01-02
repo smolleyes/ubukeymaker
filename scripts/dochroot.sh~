@@ -95,10 +95,10 @@ for APT in `find /etc/apt/ -name *.list`; do
         sudo apt-key adv --list-keys $KEYID >/dev/null 2>&1
         if [ $? != 0 ]
         then
-            echo "Grabbing key $KEYID for archive $PPA by ~$USER"
+            echo Grabbing key $KEYID for archive $PPA by ~$USER
             sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com $KEYID
         else
-            echo "Already have key $KEYID for archive $PPA by ~$USER"
+            echo Already have key $KEYID for archive $PPA by ~$USER
         fi
     done
 done
@@ -128,27 +128,6 @@ cp /etc/hosts "${DISTDIR}"/chroot/etc/ -f
 ## determine quelle session tourne actuellement (tres chiant)
 if [[ `ps aux | grep -e "[g]nome-settings-daemon" ` ]]; then
 	localSession="gnome"
-	starter = "gnome-session"
-	test=`sudo chroot "${DISTDIR}"/chroot lsb_release -cs`
-	if [ "$(chroot "${DISTDIR}"/chroot lsb_release -cs)" = "oneiric" ]; then
-	    rm /tmp/zenity
-	    echo -e 'zenity --list --checklist --width 650 --height 500 --title "Choix de la session" --column "choix" --column "Session" --text "choisissez la session a demarrer" \\'  | tee /tmp/zenity &>/dev/null
-	    for i in `ls /usr/share/xsessions | sed -e 's/.desktop//'`; do
-	    echo -e "FALSE \"$i\" \\" | tee -a /tmp/zenity &>/dev/null
-	    done
-
-	    chmod +x /tmp/zenity
-	    MENU=$(/tmp/zenity)
-
-	    res="`echo $MENU | sed 's/|/ /g' | awk '{print $1}'`"
-
-	    if [ -n $res ]; then
-	    starter="gnome-session --session=$res"
-	    else
-	    starter="gnome-session"
-	    fi
-	fi
-	echo "session_starter=$starter" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 elif [[ `ps aux | grep -e "[k]ded4" ` && ! `ps aux | grep -e "[g]nome-settings-daemon"` ]]; then
 	localSession="kde4"
 elif [[ `ps aux | grep -e "[x]fsettingsd"` ]]; then
@@ -254,8 +233,7 @@ touch "${DISTDIR}"/logs/chrootlog.log &>/dev/null
 rm "${DISTDIR}"/chroot/tmp/chrootlog.log &>/dev/null
 touch "${DISTDIR}"/chroot/tmp/chrootlog.log &>/dev/null
 rm -f "${DISTDIR}"/chroot/etc/skel/*/{ubukey-assist,quit-chroot,gc}.desktop &>/dev/null
-mkdir "${DISTDIR}"/chroot/run/shm &>/dev/null
-chmod 777 "${DISTDIR}"/chroot/run/shm &>/dev/null
+
 (tail -f "${DISTDIR}"/chroot/tmp/chrootlog.log &) 2>/dev/null & chroot "$DISTDIR"/chroot &> "${DISTDIR}"/logs/chrootlog.log << "EOF"
 
 mode="$(cat /etc/ubukey/ubukeyconf | grep -e "mode" | sed 's/.*=//')"
@@ -282,11 +260,10 @@ LOCALBASE="$(cat /etc/ubukey/ubukeyconf | grep -e "localbase" | sed 's/.*=//')"
 LOCALSIMPLE="$(cat /etc/ubukey/ubukeyconf | grep -e "localsimple" | sed 's/.*=//')"
 DIST="$(cat /etc/lsb-release | grep CODENAME | sed 's/.*=//')"
 DRIVER="$(cat /etc/ubukey/ubukeyconf | grep -e "driver" | sed 's/.*=//')"
-session_starter="$(cat /etc/ubukey/ubukeyconf | grep -e "session_starter" | sed 's/session_starter=//')"
 
 if [ "$sessionType" = "console" ]; then
-    sessionType="console"
-    starter="xterm"
+	sessionType="console"
+	starter="xterm"
 fi
 
 ## langue dans chroot
@@ -310,6 +287,9 @@ Langue : $LOCALSIMPLE
 Clavier: $LOCALSIMPLE
 "
 
+#dpkg-divert --local --rename --add /sbin/initctl
+﻿#ln -s /bin/true /sbin/initctl
+
 #monter minimun necessaire
 mount -t proc none /proc
 mount -t sysfs none /sys
@@ -319,7 +299,7 @@ umount -f /lib/modules/*/volatile &>/dev/null
 
 ## check sources
 message "Verification des sources, merci de patienter"
-#/bin/bash $UBUKEYDIR/scripts/themescan.sh
+/bin/bash $UBUKEYDIR/scripts/themescan.sh
 
 ## Changement de la langue par defaut des consoles tty avec : $LOCALSIMPLE
 sed -i 's/XKBLAYOUT=.*/XKBLAYOUT="'$LOCALSIMPLE'"/' /etc/default/console-setup
@@ -329,7 +309,11 @@ case $sessionType in
 gnome)
 decorator="metacity"
 term="gnome-terminal"
-starter=$session_starter
+if [ $DIST = 'oneiric' ]; then
+starter="gnome-session --session=gnome"
+else
+starter=gnome-session
+fi
 ;;
 kde4)
 decorator=kwin
@@ -536,16 +520,11 @@ fi
 #fi
 
 #### START DBUS
-rm -R /home/"$USER"/.dbus
 rm -R /var/run/dbus/* 2>/dev/null
 #important sinon pas moyen de booter dbus!
 mkdir /var/run/dbus/ 2>/dev/null
-dbus-uuidgen > /var/lib/dbus/machine-id
 /etc/init.d/dbus start
 dbus-daemon --system --fork
-dpkg-divert --local --rename --add /sbin/initctl
-﻿ln -s /bin/true /sbin/initctl
-
 
 ############## STARTX #############################
 
@@ -760,7 +739,6 @@ rm -rf /etc/skel/.gvfs &>/dev/null
 
 message "nettoyage des fichiers de l utilisateur temporaire du chroot\n"
 ## efface utilisateur
-rm -R /home/"$USER"/.dbus
 rm /home/"$USER"/"$deskdir"/Shared_Folder
 rm /etc/xdg/autostart/fix-clavier.desktop &>/dev/null
 rm /etc/skel/.config/autostart/fix-clavier.desktop &>/dev/null
@@ -784,9 +762,6 @@ rm -R -f /root/* &>/dev/null
  
 ## more info for damn adduser under live-session
 sed -i 's/user-setup-apply > \/dev\/null/user-setup-apply/' /usr/share/initramfs-tools/scripts/casper-bottom/10adduser &>/dev/null
-rm /var/lib/dbus/machine-id
-rm /sbin/initctl
-dpkg-divert --rename --remove /sbin/initctl
 
 
 }

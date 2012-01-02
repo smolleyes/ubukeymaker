@@ -31,6 +31,7 @@ class Distribs(object):
         self.gui.run_btn_img.set_from_stock(gtk.STOCK_STOP,gtk.ICON_SIZE_BUTTON)
         self.gui.run_btn_state = "started"
         self.gui.vt.log("distro started")
+	#self.gui.notebook.set_current_page(1)
         self.gui.vt.run_command('gksu /bin/bash %s %s %s' % (self.chroot_script, self.gui.selected_dist_path, self.username))
         self.pid = os.popen("ps aux | grep -e 'dochroot' | grep -v 'grep'").read().strip()
         while 1:
@@ -52,6 +53,7 @@ class Distribs(object):
         self.gui.run_btn_img.set_from_stock(gtk.STOCK_MEDIA_PLAY,gtk.ICON_SIZE_BUTTON)
         self.gui.run_btn_state = "stopped"
         self.gui.vt.log("distro stopped")
+	self.gui.notebook.set_current_page(0)
     
     def update_list(self):
         self.main_dist_path,dist_list = scan_dist_path()

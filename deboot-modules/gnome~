@@ -31,6 +31,7 @@ policykit-desktop-privileges
 udisks
 software-center
 wget
+libimobiledevice*
 ## for live-cd
 casper
 lupin-casper

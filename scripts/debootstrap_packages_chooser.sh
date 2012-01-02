@@ -17,6 +17,20 @@ FALSE midori \
 '
 }
 
+function select_loginmanager(){
+MENU='#!/bin/bash
+zenity --list --checklist \
+--width 800 --height 600 \
+--title "Paquets supplémentaires" \
+--text "Choisissez votre gestionnaire de connexion:" \
+--column="État" --column "Nom" \
+FALSE lightdm \
+FALSE gdm \
+FALSE kdm \
+FALSE xdm \
+'
+}
+
 function select_mail(){
 MENU='#!/bin/bash
 zenity --list --checklist \
@@ -114,6 +128,8 @@ rm /tmp/full_list
 }
 
 select_webbrowser
+show_menu
+select_loginmanager
 show_menu
 select_mail
 show_menu
