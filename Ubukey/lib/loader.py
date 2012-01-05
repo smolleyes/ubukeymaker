@@ -72,7 +72,7 @@ def FirstRun():
         os.system('rm -R %s' % conf_path)
     dialog.destroy()
 	
-    path_part = os.popen("df '%s' | grep /dev | awk '{print $1}'" % path, 'r').read().strip()
+    path_part = os.popen("df '%s' | grep -E '/dev|/.Private' | awk '{print $1}'" % path, 'r').read().strip()
     path_check = os.popen("mount | grep '%s' | grep -E '(ntfs|vfat|nosuid|noexec|nodev)'" % path_part, 'r').read().strip()
     if (path_check != ''):
         print "Please select another folder (no ntfs/fat partitions or partitions mounted with nosuid/nodev/noexec options or root protected...please correct fstab or choose another partition!)"
