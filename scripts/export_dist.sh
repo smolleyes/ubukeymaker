@@ -128,7 +128,7 @@ fi
 
 ## modifie syslinux.cfg si besoin
 if [ ! -e /media/custom-usb/syslinux.cfg ]; then
-	cp -f /usr/share/ubukey/conf_files/syslinux.cfg /media/custom-usb/syslinux.cfg
+	cp -f /usr/share/ubukey/../conf_files/syslinux.cfg /media/custom-usb/syslinux.cfg
 fi
 
 if [ -e "/media/custom-usb/initrd.lz" ]; then
@@ -227,7 +227,7 @@ fi
 bootdir="${DISTDIR}/usb"
 echo -e "Préparation des fichiers de boot pour usb \n" 
 if [ ! -e "$bootdir/syslinux.cfg" ]; then
-	cp -f $UBUKEYDIR/conf_files/syslinux.cfg "$bootdir/"
+	cp -f $UBUKEYDIR/../conf_files/syslinux.cfg "$bootdir/"
 fi
 
 if [ "$X64" == "true" ]; then	
