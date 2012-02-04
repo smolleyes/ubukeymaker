@@ -665,8 +665,8 @@ fi
 ## verification des kernels
 
 ## 1 liste le kernel le plus a jour installé
-INIT=$(ls -al /boot | grep initrd.img | tail -n1 | sed 's/.*2.6/2.6/')
-VMLINUZ=$(ls -al /boot | grep vmlinuz | tail -n1 | sed 's/.*2.6/2.6/')
+INIT=$(ls -al /boot | grep initrd.img | tail -n1 | sed 's/.*initrd.img-//')
+VMLINUZ=$(ls -al /boot | grep vmlinuz | tail -n1 | sed 's/.*vmlinuz-//')
 
 ## maj initiale au cas ou 
 if [[ ! -e "/vmlinuz" || ! -e "/initrd.img" ]]; then
@@ -682,12 +682,12 @@ apt-get -y --force-yes install --reinstall linux-headers-generic linux-image-gen
 fi
 fi
 
-INIT=$(ls /boot | grep initrd.img | tail -n1 | sed 's/.*2.6/2.6/')
-VMLINUZ=$(ls /boot | grep vmlinuz | tail -n1 | sed 's/.*2.6/2.6/')
+INIT=$(ls /boot | grep initrd.img | tail -n1 | sed 's/.*initrd.img-//')
+VMLINUZ=$(ls /boot | grep vmlinuz | tail -n1 | sed 's/.*vmlinuz-//')
 
 ## si le lien du kernel n'est pas le bon
-INITLINK=$(ls -al /initrd.img | sed 's/.*2.6/2.6/')
-VMLINUZLINK=$(ls -al /vmlinuz | sed 's/.*2.6/2.6/')
+INITLINK=$(ls -al /initrd.img | sed 's/.*initrd.img-//')
+VMLINUZLINK=$(ls -al /vmlinuz | sed 's/.*vmlinuz-//')
 if [[ $INIT != $INITLINK || $VMLINUZ != $VMLINUZLINK ]]; then
 rm /initrd.img
 rm /vmlinuz

@@ -325,7 +325,7 @@ sed -i 's/rw,noatime,mode=755/rw,noatime/' /usr/share/initramfs-tools/scripts/ca
 
 ## maj initiale du kernel
 initcheck=$(ls /boot | grep "vmlinuz")
-initver=$(ls -al /boot/initrd.* | tail -n1 | sed 's/.*2.6/2.6/;s/.*3.0/3.0/')
+initver=$(ls -al /boot/initrd.* | tail -n1 | sed 's/.*initrd.img-//')
 DIST=$(lsb_release -cs)
 if [[ -z "$initcheck" || -z "$initver" ]]; then
 message "Initrd manquant, reinstallation pour kernel : $initver, merci de patienter... \n"
