@@ -20,7 +20,7 @@ try:
         import Ubukey
 
 except ImportError:
-        raise SystemExit(' * Error: the "Ubukey" module is missing. If you did not install ubukey to /usr, you may need to add the appropriate site-packages directory to your PYTHONPATH')
+        raise SystemExit(' * Error: the "GmediaFinder" module is missing. If you did not install gmediafinder to /usr, you may need to add the appropriate site-packages directory to your PYTHONPATH')
 
 from Ubukey import ubukey
 ubukey.Ubukey_gui()

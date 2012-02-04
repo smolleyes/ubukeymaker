@@ -216,6 +216,7 @@ class Ubukey_gui(object):
 		self.distribs.edit_plug()
         
     def exit(self,window=None,event=None):
+        os.system("kill -9 `ps aux | grep ubukey | grep .sh | awk '{print $2}' |xargs`")
         os.system('killall -9 Xephyr')
         gtk.main_quit()
         

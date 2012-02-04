@@ -373,7 +373,7 @@ res=$(( `cat /tmp/count` / 1000 ))
 needed_space=$(( $res + 256 ))
 chspace=$(($(df "$DISTDIR"/chroot | grep /dev | awk '{print $4}') / 1000 ))
 
-if [ $needed_space = 256 ]; then
+if [ "$needed_space" = 256 ]; then
 echo -e "\nAucun nouveau paquet n'est à installer, seules les mises a jour seront verifiées \n" 
 else
 echo -e "\nL'espace nécessaire pour l'installation des paquets manquants 

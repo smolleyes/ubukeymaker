@@ -325,11 +325,16 @@ sed -i 's/rw,noatime,mode=755/rw,noatime/' /usr/share/initramfs-tools/scripts/ca
 
 ## maj initiale du kernel
 initcheck=$(ls /boot | grep "vmlinuz")
-initver=$(ls -al /boot/initrd.* | tail -n1 | sed 's/.*2.6/2.6/')
+initver=$(ls -al /boot/initrd.* | tail -n1 | sed 's/.*2.6/2.6/;s/.*3.0/3.0/')
 DIST=$(lsb_release -cs)
 if [[ -z "$initcheck" || -z "$initver" ]]; then
 message "Initrd manquant, reinstallation pour kernel : $initver, merci de patienter... \n"
-apt-get -y --force-yes install --reinstall linux-image-$initver linux-headers-$initver
+## nettoie fichiers desinstalles mais pas la conf donc toujours apparents
+dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null 
+apt-get update
+echo -e "\nReinstallation du kernel, patience svp...\n"
+apt-get remove --purge -y linux-headers* linux-image*
+apt-get -y --force-yes install --reinstall linux-headers-generic linux-image-generic
 else
 message "mise a jour en version: $initver, merci de patienter... \n"
 update-initramfs -ck all

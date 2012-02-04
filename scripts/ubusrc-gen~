@@ -17,23 +17,18 @@ printf '\033[%sm%s\033[m\n' "$@"
 
 function COMMAND()
 {
-if [ -z "$LOG" ]; then
+if [ -z "$LOG" ];then
 	exec $1 &>/dev/null
 else
 	exec $1
 fi
 }
 
-hostVersion="$(cat /etc/ubukey/ubukeyconf | grep -e "hostVersion" | sed 's/hostVersion=//')"
-if [ -n $hostVersion ]; then
-    sed -i 's/'$hostVersion'/'$DIST'/g' /etc/apt/sources.list
-fi
-
 
 function SCAN()
 {
 case $DIST in
-lucid|maverick|natty|oneiric|precise)
+lucid|maverick|natty)
 if [ -z "$DIST64" ]; then
 echo -e `color 34 "Ubuntu $DIST (32-bits) detecte...Mise a jour des sources...."` 
 EXTRAS=""
@@ -148,7 +143,7 @@ scan_src
 ## edite le sources
 echo -e "$EXTRAS" | while read line ; do
 check=$(echo -e "${LISTE}" | grep -e "$line")
-	if [ -z "$check" ]; then
+	if [ -z "$check" ];then
 	echo -e "depot(s) specifique(s) au script à ajouter:
 $line \n"
 		echo -e "$line" | tee -a /etc/apt/sources.list &>/dev/null
@@ -201,7 +196,7 @@ check_src=$(echo -e "${LISTE}" | grep -e ".*deb-src .* $DIST .*$i" | grep -v 'cd
 if [ -z "$check" ]; then
 	echo -e "Source deb $DIST $i non présente, activation \n"
 	echo -e "$depot $DIST $i" | sudo tee -a /etc/apt/sources.list &>/dev/null
-elif [[ $(echo -e "$check" | grep "^#") ]]; then
+elif [[ $(echo -e "$check" | grep "^#") ]];then
 echo -e "Dépot:
 $check
 présent mais commenté, activation... \n"
@@ -213,7 +208,7 @@ else
 fi
 
 ## depots deb-src
-if [ -z "$check_src" ]; then
+if [ -z "$check_src" ];then
 	echo -e "Source deb-src $DIST $i non présente, activation \n"
 	echo -e "$depot_src $DIST $i" | tee -a /etc/apt/sources.list &>/dev/null
 elif [[ $(echo -e "$check_src" | grep "^#") ]];then

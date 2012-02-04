@@ -43,7 +43,8 @@ FALSE "Xubuntu-lucid" "Préparer pour xubuntu lucid" \
 FALSE "Xubuntu-lucid-64" "Préparer pour xubuntu lucid 64 bits" \
 FALSE "Ubuntu-netbook-remix" "Préparer pour u.n.r lucid (pour mini-pc)" \
 FALSE "Lubuntu" "Préparer pour lubuntu lucid (lxde)" \
-FALSE "Oneiric-daily" "Préparer pour ubuntu oneiric daily (gnome)" \
+FALSE "Oneiric" "Préparer pour ubuntu oneiric daily (gnome)" \
+FALSE "Precise-pangolin" "Ubuntu precise pangolin daily build" \
 FALSE "Custom" "Préparer vos distribution par debootstrap (Expert!)"
 `
 
@@ -149,6 +150,15 @@ case $DISTCHOICE in
 	Oneiric-daily)
 	ISOURL="http://cdimage.ubuntu.com/daily-live/current/oneiric-desktop-i386.iso"
 	ISONAME="oneiric-desktop-i386.iso"
+    cd /tmp
+    rm MD5* >/dev/null
+    wget http://cdimage.ubuntu.com/daily-live/current/MD5SUMS
+    MD5SUM=$(cat MD5SUMS | grep desktop-i386 | awk '{print $1}')
+	ISOTYPE="gnome"
+	;;
+	Precise-pangolin)
+	ISOURL="http://cdimage.ubuntu.com/daily-live/current/precise-desktop-i386.iso"
+	ISONAME="precise-desktop-i386.iso"
     cd /tmp
     rm MD5* >/dev/null
     wget http://cdimage.ubuntu.com/daily-live/current/MD5SUMS

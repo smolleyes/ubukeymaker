@@ -118,6 +118,7 @@ dpkg --get-selections | tee "${DISTDIR}"/chroot/etc/ubukey/sources/pkglist.selec
 sed -i '/mode/d' "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf
 #sed -i 's/\/root/\/home\/'$USER'/' "${DISTDIR}"/chroot/etc/passwd
 echo "user=$USER" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
+echo "hostVersion=$CURDIST" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 echo "keyLayout=$keylayout" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 echo "localsimple=$LOCALSIMPLE" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 echo "localbase=$LOCALBASE" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
@@ -129,11 +130,10 @@ cp /etc/hosts "${DISTDIR}"/chroot/etc/ -f
 if [[ `ps aux | grep -e "[g]nome-settings-daemon" ` ]]; then
 	localSession="gnome"
 	starter = "gnome-session"
-	test=`sudo chroot "${DISTDIR}"/chroot lsb_release -cs`
-	if [ "$(chroot "${DISTDIR}"/chroot lsb_release -cs)" = "oneiric" ]; then
+	if [[ `lsb_release -cs | grep -E "precise||oneiric"` ]]; then
 	    rm /tmp/zenity
 	    echo -e 'zenity --list --checklist --width 650 --height 500 --title "Choix de la session" --column "choix" --column "Session" --text "choisissez la session a demarrer" \\'  | tee /tmp/zenity &>/dev/null
-	    for i in `ls /usr/share/xsessions | sed -e 's/.desktop//'`; do
+	    for i in `ls "${DISTDIR}"/chroot/usr/share/xsessions | sed -e 's/.desktop//'`; do
 	    echo -e "FALSE \"$i\" \\" | tee -a /tmp/zenity &>/dev/null
 	    done
 
@@ -204,6 +204,7 @@ dbus-uuidgen | tee "${DISTDIR}"/chroot/var/lib/dbus/machine-id &>/dev/null
 
 mkdir "${DISTDIR}"/chroot/var/run/dbus &>/dev/null
 mount -o rbind /var/run/dbus "${DISTDIR}"/chroot/var/run/dbus &>/dev/null
+rm "${DISTDIR}"/chroot/var/run/dbus/pid &>/dev/null
 
 deftty="`ps ax | grep -w '[/]usr/bin/X :0' | awk '{print $2}' | sed 's/tty//'`"
 rm "${DISTDIR}"/chroot/tmp/deftty &>/dev/null
@@ -283,6 +284,7 @@ LOCALSIMPLE="$(cat /etc/ubukey/ubukeyconf | grep -e "localsimple" | sed 's/.*=//
 DIST="$(cat /etc/lsb-release | grep CODENAME | sed 's/.*=//')"
 DRIVER="$(cat /etc/ubukey/ubukeyconf | grep -e "driver" | sed 's/.*=//')"
 session_starter="$(cat /etc/ubukey/ubukeyconf | grep -e "session_starter" | sed 's/session_starter=//')"
+hostVersion="$(cat /etc/ubukey/ubukeyconf | grep -e "hostVersion" | sed 's/hostVersion=//')"
 
 if [ "$sessionType" = "console" ]; then
     sessionType="console"
@@ -677,11 +679,6 @@ apt-get update
 message "\nReinstallation du kernel, patience svp...\n"
 apt-get remove --purge -y linux-headers* linux-image*
 apt-get -y --force-yes install --reinstall linux-headers-generic linux-image-generic
-else
-INIT=$(ls /boot | grep initrd.img | tail -n1 | sed 's/.*2.6/2.6/')
-VMLINUZ=$(ls /boot | grep vmlinuz | tail -n1 | sed 's/.*2.6/2.6/')
-ln -s /boot/initrd.img-$INIT /initrd.img
-ln -s /boot/vmlinuz-$VMLINUZ /vmlinuz
 fi
 fi
 
