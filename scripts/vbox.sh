@@ -9,7 +9,10 @@ if [ -e "/usr/share/ubukey" ]; then
 UBUKEYDIR="/usr/share/ubukey"
 elif [ -e "/usr/local/share/ubukey" ]; then
 UBUKEYDIR="/usr/local/share/ubukey"
+else
+UBUKEYDIR="$(pwd)/.."
 fi
+v
 
 function chooseMedia() 
 {

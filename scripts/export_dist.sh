@@ -12,6 +12,8 @@ if [ -e "/usr/share/ubukey" ]; then
 UBUKEYDIR="/usr/share/ubukey"
 elif [ -e "/usr/local/share/ubukey" ]; then
 UBUKEYDIR="/usr/local/share/ubukey"
+else
+UBUKEYDIR="$(pwd)/.."
 fi
 
 #############################
@@ -39,10 +41,10 @@ elif [ -z "$usbpart" ]; then
 	exit 0 
 fi
 
-#on monte la part vfat /dev/sdx1 de la clé
+#on monte la part /dev/sdx1 de la clé
 if [[ ! `mount | grep "custom-usb" | grep umask=000` ]]; then
 	umount -l -f /media/custom-usb &>/dev/null
-	mount -t vfat -o rw,users,umask=000 /dev/$usbdev'1' /media/custom-usb
+	mount -t $usbpartType -o rw,users,umask=000 /dev/$usbdev'1' /media/custom-usb
 fi
 
 echo  "Fichiers image et cle ok pour la copie !" 
@@ -120,10 +122,10 @@ sleep 5
 ## Prepare Extlinux si necessaire...
 function extlinuxconf()
 {
-#on monte la part vfat /dev/sdx1 de la clé
+#on monte la part /dev/sdx1 de la clé
 if [[ ! `mount | grep "custom-usb" | grep umask=000` ]]; then
 	umount -l -f /media/custom-usb &>/dev/null
-	mount -t vfat -o rw,users,umask=000 /dev/$usbdev'1' /media/custom-usb
+	mount -t $usbpartType -o rw,users,umask=000 /dev/$usbdev'1' /media/custom-usb
 fi
 
 ## modifie syslinux.cfg si besoin
@@ -826,6 +828,14 @@ while [[ ! $(cat /proc/partitions | grep -e "$usbdev") ]]; do
 	sleep 10
 done
 
+usbpartType=$(blkid -s TYPE /dev/"$usbdev"1 | awk {'print $2'} | sed 's/TYPE="//;s/"//')
+if [ "$usbpartType" = "vfat" ]; then
+	usbpartMountType="fat"
+	usbpartFormatType="fat32"
+else
+	usbpartMountType="ext4"
+	usbpartFormatType="ext4"
+fi
 }
 
 
@@ -880,8 +890,8 @@ echo -e "Contrôle de la clé..."
 labelro="extlinux-ro"
 labelrw="casper-rw"
 
-FSPART1=`blkid -s TYPE /dev/"$usbdev"1 | awk {'print $2'} | grep fat`
-FSPART2=`blkid -s TYPE /dev/"$usbdev"2 | awk {'print $2'} | grep fat`
+FSPART1=`blkid -s TYPE /dev/"$usbdev"1 | awk {'print $2'} | grep $usbpartMountType`
+FSPART2=`blkid -s TYPE /dev/"$usbdev"2 | awk {'print $2'} | grep $usbpartMountType`
 LBPART1=`blkid /dev/"$usbdev"1 | grep "$labelro"`
 LBPART2=`blkid /dev/"$usbdev"2 | grep "$labelrw"`
 
@@ -899,8 +909,8 @@ elif [ -z "${LBPART2}" ]; then
 exit 0
 else
 	echo 
-	echo  "Partition 1 ok : Format \"vfat\", Label: \"$labelro\""
-	echo  "Partition 2 ok : Format \"vfat\", Label: \"$labelrw\""
+	echo  "Partition 1 ok : Format \"$usbpartType\", Label: \"$labelro\""
+	echo  "Partition 2 ok : Format \"$usbpartType\", Label: \"$labelrw\""
 	
 	echo 
 	echo  "Test des partitions de la clé ok"
@@ -976,10 +986,10 @@ esac
 else
 devname=$(blkid | grep "$usbdev"1 | awk '{print $2}' | sed 's/[A-Z\ = "]//g')
 actual=$(parted /dev/"$usbdev" unit Mb print | grep -w "^ 1" | awk {'print $3'} | sed 's/[A-Z\, a-z/]//g')
-FSPART1=`blkid -s TYPE /dev/"$usbdev"1 | awk {'print $2'} | grep fat | sed 's/TYPE=\"//;s/\"//'`
-FSPART2=`blkid -s TYPE /dev/"$usbdev"2 | awk {'print $2'} | grep fat | sed 's/TYPE=\"//;s/\"//'`
+FSPART1=`blkid -s TYPE /dev/"$usbdev"1 | awk {'print $2'} | grep $usbpartMountType | sed 's/TYPE=\"//;s/\"//'`
+FSPART2=`blkid -s TYPE /dev/"$usbdev"2 | awk {'print $2'} | grep $usbpartMountType | sed 's/TYPE=\"//;s/\"//'`
 
-if [[ "$PART1" -gt "$actual" || "$devname" != "extlinux-ro" || "$FSPART1" != "vfat" || "$FSPART2" != "vfat" ]]; then
+if [[ "$PART1" -gt "$actual" || "$devname" != "extlinux-ro" || "$FSPART1" != "$usbpartType" || "$FSPART2" != "$usbpartType" ]]; then
 
 zenity --question --text "Votre clé \"$usbdev\" doit être reformatée !
 
@@ -1061,7 +1071,22 @@ PART=/dev/$usbdev
 #SECTORS=`cat /tmp/diskpart | grep "^secteurs" | sed 's/secteurs : //'`
 ## print values to log
 #cat /tmp/diskpart | tee -a $LOG &>/dev/null
-parted -s /dev/$usbdev unit MB mkpart primary fat32 1 $PART1_SIZE -a cyl >/dev/null 2>&1
+
+## choix du type de formattage
+partType=$(zenity --list --checklist --width 650 --height 500 --title "Partitionnement" \
+--column "choix" --column "Session" --text "choisissez le format de partition à utiliser" \ FALSE "ext4" \ FALSE "vfat")
+
+if [ "$partType" = "vfat" ]; then
+	usbpartType="vfat"
+	usbpartMountType="fat"
+	usbpartFormatType="fat32"
+else
+	usbpartType="ext4"
+	usbpartMountType="ext4"
+	usbpartFormatType="ext4"
+fi
+
+parted -s /dev/$usbdev unit MB mkpart primary $usbpartFormatType 1 $PART1_SIZE -a cyl >/dev/null 2>&1
 
 UMOUNT_SD
 
@@ -1073,24 +1098,29 @@ SECPART=$(( $TOTAL - $PART1_SIZE ))
 if [[ $SECPART -gt 3990 ]]; then
 	SECPART=$(( $PART1_SIZE + 3990 ))
 fi
-parted -s /dev/$usbdev unit MB mkpart primary fat32 $PART1_SIZE $SECPART -a cyl >/dev/null 2>&1 ## TOTALSSSSS for sectors...
-
+parted -s /dev/$usbdev unit MB mkpart primary $usbpartFormatType $PART1_SIZE $SECPART -a cyl >/dev/null 2>&1 ## TOTALSSSSS for sectors...
 UMOUNT_SD
 
 echo -e "Formate les partitions ..."
-mkdosfs -F 32 -n extlinux-ro /dev/$usbdev'1' >/dev/null 2>&1 & wait_valid $usbdev'1'
-UMOUNT_SD
-mkdosfs -F 32 -n casper-rw /dev/$usbdev'2' >/dev/null 2>&1 & wait_valid $usbdev'2'
-UMOUNT_SD
+if [ "$usbpartFormatType" = "fat32" ]; then
+	mkdosfs -F 32 -n extlinux-ro /dev/$usbdev'1' >/dev/null 2>&1 & wait_valid $usbdev'1'
+	UMOUNT_SD
+	mkdosfs -F 32 -n casper-rw /dev/$usbdev'2' >/dev/null 2>&1 & wait_valid $usbdev'2'
+	UMOUNT_SD
+else
+	mke2fs -T ext4 -b 4096 -L extlinux-ro /dev/$usbdev'1' >/dev/null 2>&1 & wait_valid $usbdev'1'
+	UMOUNT_SD
+	mke2fs -T ext4 -b 4096 -L casper-rw /dev/$usbdev'2' >/dev/null 2>&1 & wait_valid $usbdev'2'
+	UMOUNT_SD	
+	echo -e "disable journal for ext4"
+	tune2fs -O ^has_journal /dev/$usbdev'1' >/dev/null 2>&1
+	tune2fs -O ^has_journal /dev/$usbdev'2' >/dev/null 2>&1
 
-#echo -e "disable journal for ext4"
-#tune2fs -O ^has_journal /dev/$usbdev'1' >/dev/null 2>&1
-#tune2fs -O ^has_journal /dev/$usbdev'2' >/dev/null 2>&1
-
-#| zenity --progress --pulsate --text "Formatage de la partition "$usbdev"1" --auto-close #formate et pose label
-#while [[ `ps aux | grep [m]kfs.ext4` ]]; do sleep 3; done
-#| zenity --progress --pulsate --text "Formatage de la partition "$usbdev"2" --auto-close #formate et pose label
-#while [[ `ps aux | grep [m]kfs.ext4` ]]; do sleep 3; done
+	#zenity --progress --pulsate --text "Formatage de la partition "$usbdev"1" --auto-close #formate et pose label
+	#while [[ `ps aux | grep [m]kfs.ext4` ]]; do sleep 3; done
+	#zenity --progress --pulsate --text "Formatage de la partition "$usbdev"2" --auto-close #formate et pose label
+	#while [[ `ps aux | grep [m]kfs.ext4` ]]; do sleep 3; done
+fi
 
 UMOUNT_SD
 parted -s /dev/$usbdev set 1 boot on
@@ -1104,8 +1134,8 @@ function wait_valid () {
 	sleep 2
 	echo -e "\nformatage de /dev/$part en cours..."
 	while [ : ] ; do
-		check="$(sudo blkid -s TYPE /dev/$part | awk {'print $2'} | grep fat | sed 's/TYPE=\"//;s/\"//')"
-		if [ "$check" = "vfat" ]; then
+		check="$(sudo blkid -s TYPE /dev/$part | awk {'print $2'} | grep $usbpartMountType | sed 's/TYPE=\"//;s/\"//')"
+		if [ "$check" = "$usbpartType" ]; then
 			echo -e "Formatage terminé ! \n"
 			break
 		elif [ $sec -eq 120 ]; then

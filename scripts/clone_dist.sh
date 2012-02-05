@@ -6,6 +6,15 @@ WORK="$3"
 old_dist="$DIST"
 old_distdir="$DISTDIR"
 
+if [ -e "/usr/share/ubukey" ]; then 
+UBUKEYDIR="/usr/share/ubukey"
+elif [ -e "/usr/local/share/ubukey" ]; then
+UBUKEYDIR="/usr/local/share/ubukey"
+else
+UBUKEYDIR="$(pwd)/.."
+fi
+
+
 function distName {
 	choix=`zenity --width=350 --height=80 --title "Nom du projet" --text "Indiquez un nom pour votre projet 
 

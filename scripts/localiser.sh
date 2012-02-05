@@ -4,7 +4,10 @@ if [ -e "/usr/share/ubukey" ]; then
 UBUKEYDIR="/usr/share/ubukey"
 elif [ -e "/usr/local/share/ubukey" ]; then
 UBUKEYDIR="/usr/local/share/ubukey"
+else
+UBUKEYDIR="$(pwd)/.."
 fi
+
 
 cp -f $UBUKEYDIR/scripts/ubusrc-gen /usr/local/bin
 chmod +x /usr/local/bin/ubusrc-gen

@@ -7,7 +7,10 @@ if [ -e "/usr/share/ubukey" ]; then
 UBUKEYDIR="/usr/share/ubukey"
 elif [ -e "/usr/local/share/ubukey" ]; then
 UBUKEYDIR="/usr/local/share/ubukey"
+else
+UBUKEYDIR="$(pwd)/.."
 fi
+
 
 if [[ "`uname -m`" == "x86_64" ]]; then
 	X64="true"
