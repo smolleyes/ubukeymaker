@@ -633,7 +633,7 @@ message "Verifie l'integritee des fichiers vmlinuz/initrd \n"
 
 kernel_count=$(ls -al /boot | grep initrd.img | wc | awk '{print $1}')
 
-if [ $kernel_count >= 2 ]; then
+if [ "$kernel_count" >= 2 ]; then
 list=$(ls /boot | grep initrd.img | sed '$d')
 echo -e "$list" | while read line; do
 ver=$(echo -e $line | sed 's/.*initrd.img-//')

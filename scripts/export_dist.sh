@@ -42,9 +42,13 @@ elif [ -z "$usbpart" ]; then
 fi
 
 #on monte la part /dev/sdx1 de la clé
-if [[ ! `mount | grep "custom-usb" | grep umask=000` ]]; then
+if [[ ! `mount | grep "custom-usb"` ]]; then
 	umount -l -f /media/custom-usb &>/dev/null
-	mount -t $usbpartType -o rw,users,umask=000 /dev/$usbdev'1' /media/custom-usb
+	if [ "$usbpartType" = "vfat" ]; then
+		mount -t $usbpartType -o rw,users,umask=000 /dev/$usbdev'1' /media/custom-usb
+	else
+	    mount -t $usbpartType -o rw,users /dev/$usbdev'1' /media/custom-usb
+	fi
 fi
 
 echo  "Fichiers image et cle ok pour la copie !" 
@@ -123,27 +127,54 @@ sleep 5
 function extlinuxconf()
 {
 #on monte la part /dev/sdx1 de la clé
-if [[ ! `mount | grep "custom-usb" | grep umask=000` ]]; then
+if [[ ! `mount | grep "custom-usb"` ]]; then
 	umount -l -f /media/custom-usb &>/dev/null
-	mount -t $usbpartType -o rw,users,umask=000 /dev/$usbdev'1' /media/custom-usb
+	if [ "$usbpartType" = "vfat" ]; then
+		mount -t $usbpartType -o rw,users,umask=000 /dev/$usbdev'1' /media/custom-usb
+	else
+	    mount -t $usbpartType -o rw,users /dev/$usbdev'1' /media/custom-usb
+	fi
 fi
 
 ## modifie syslinux.cfg si besoin
-if [ ! -e /media/custom-usb/syslinux.cfg ]; then
-	cp -f /usr/share/ubukey/../conf_files/syslinux.cfg /media/custom-usb/syslinux.cfg
-fi
-
-if [ -e "/media/custom-usb/initrd.lz" ]; then
-	sed -i 's/initrd.gz/initrd.lz/g' /media/custom-usb/syslinux.cfg
-	sed -i 's/.utf8/.UTF-8/g' /media/custom-usb/syslinux.cfg
-fi
-
+PATH=$PATH:/sbin:/usr/sbin
+export $PATH
 bootdir="/media/custom-usb"
-if [ ! -e "$bootdir/ldlinux.sys" ]; then
-	echo -e "syslinux va etre installe sur "$bootdir", (disque /dev/"$usbdev") \n"
-	syslinux /dev/$usbdev'1'
+if [ "$usbpartType" = "ext4" ]; then
+	if [ ! -e "$bootdir/ldlinux.sys" ]; then
+	    sysConfFile="extlinux.conf"
+	    rm /media/custom-usb/syslinux.cfg &>/dev/null
+		mkdir -p "$bootdir" &>/dev/null
+		if [ ! -e "/media/custom-usb/extlinux.conf" ]; then
+			cp -f $UBUKEYDIR/conf_files/extlinux.conf /media/custom-usb/extlinux.conf
+		fi
+
+		if [ -e "/media/custom-usb/initrd.lz" ]; then
+			sed -i 's/initrd.gz/initrd.lz/g' /media/custom-usb/extlinux.conf
+			sed -i 's/.utf8/.UTF-8/g' /media/custom-usb/extlinux.conf
+		fi
+		echo -e "extlinux va etre installe sur "$bootdir", (disque /dev/"$usbdev") \n"
+		extlinux -i "$bootdir"
+	else
+		echo "Extlinux deja installé"
+	fi
 else
-	echo "Configuration de syslinux deja installée"
+	if [ ! -e "$bootdir/ldlinux.sys" ]; then
+	    sysConfFile="syslinux.cfg"
+	    rm /media/custom-usb/extlinux.conf &>/dev/null
+		if [ ! -e "/media/custom-usb/syslinux.cfg" ]; then
+			cp -f $UBUKEYDIR/conf_files/syslinux.cfg /media/custom-usb/syslinux.cfg
+		fi
+
+		if [ -e "/media/custom-usb/initrd.lz" ]; then
+			sed -i 's/initrd.gz/initrd.lz/g' /media/custom-usb/syslinux.cfg
+			sed -i 's/.utf8/.UTF-8/g' /media/custom-usb/syslinux.cfg
+		fi
+		echo -e "syslinux va etre installe sur "$bootdir", (disque /dev/"$usbdev") \n"
+		syslinux /dev/$usbdev'1'
+	else
+		echo "Configuration de syslinux deja installée"
+	fi
 fi
 testConnect
 
@@ -166,16 +197,16 @@ convert -depth 16 -resize "640x480!" $splash_image -quality "100" splash.$ext
 rm "${DISTDIR}"/splash* &>/dev/null
 sudo cp splash.$ext "${DISTDIR}"
 sudo cp "${DISTDIR}"/splash.$ext /media/custom-usb/
-sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.'$ext'/' /media/custom-usb/syslinux.cfg 
+sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.'$ext'/' /media/custom-usb/$sysConfFile
 zenity --info --text "l'image $splash_image est maintenant mise en place"
 
 ;; ## fin choix splash
 
 1) 
 if [[ ! `ls /media/custom-usb/ | grep -e "splash"` ]]; then
-cp /usr/share/ubukey/images/splash.jpg /media/custom-usb/
+cp $UBUKEYDIR/images/splash.jpg /media/custom-usb/
 convert -depth 16 -resize "640x480!" /media/custom-usb/splash.jpg /media/custom-usb/splash.jpg
-sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.jpg/' /media/custom-usb/syslinux.cfg 
+sed -i 's/BACKGROUND \/splash.*/BACKGROUND \/splash.jpg/' /media/custom-usb/$sysConfFile
 fi
 ;;
 
@@ -187,12 +218,8 @@ LOCALBASE=$(env | grep -w "LANG" | sed -e 's/\..*//' -e 's/LANG=//')
 LOCALSIMPLE=$(env | grep -w "LANG" | sed -e 's/\..*//' -e 's/LANG=//' -e 's/_.*//')
 
 if [[ ! `cat /media/custom-usb/syslinux.cfg | grep "locale=$LOCALUTF bootkbd=$LOCALSIMPLE console-setup/layoutcode=$LOCALSIMPLE"` ]]; then
-	sed -i "s/locale=.* console/locale=$LOCALUTF bootkbd=$LOCALSIMPLE console-setup\/layoutcode=$LOCALSIMPLE console/g" /media/custom-usb/syslinux.cfg &>/dev/null
+	sed -i "s/locale=.* console/locale=$LOCALUTF bootkbd=$LOCALSIMPLE console-setup\/layoutcode=$LOCALSIMPLE console/g" /media/custom-usb/$sysConfFile &>/dev/null
 fi
-
-echo  "Configuration syslinux ok !"
-echo 
-sleep 5
 
 UMOUNT_SD
 
@@ -208,7 +235,7 @@ echo -e "Verification de syslinux... \n"
 installed="$(dpkg -l | grep syslinux | awk '{print $2}')"
 version="$(dpkg -l | grep syslinux | awk '{print $3}')"
 
-if [[ ! -e /usr/bin/syslinux || ! -e "/usr/lib/syslinux" || -z "version" || "$version" == "pre47-1" ]]; then
+if [[ ! -e "/usr/bin/syslinux" || ! -e "/usr/lib/syslinux" || -z "version" || "$version" == "pre47-1" ]]; then
 	echo -e "Téléchargement/reinstallation de sylinux, veuillez patienter... \n"
 sleep 3
 #download / compile syslinux
@@ -219,17 +246,17 @@ rm -R /usr/lib64/syslinux &>/dev/null
 		for i in `dpkg -l | grep syslinux | awk '{print $2}' | xargs`; do
 			apt-get -y remove --purge "$i" &>/dev/null
 		done
-		apt-get -y --force-yes install syslinux
-		
-	sleep 2
+		apt-get -y --force-yes install syslinux extlinux
 else
 	echo -e "syslinux deja installé... ok \n" 
 fi
 
 bootdir="${DISTDIR}/usb"
 echo -e "Préparation des fichiers de boot pour usb \n" 
-if [ ! -e "$bootdir/syslinux.cfg" ]; then
-	cp -f $UBUKEYDIR/../conf_files/syslinux.cfg "$bootdir/"
+if [[ ! -e "$bootdir/syslinux.cfg" && "$usbpartType" = "vfat" ]]; then
+	cp -f $UBUKEYDIR/conf_files/syslinux.cfg "$bootdir/"
+elif [[ ! -e "$bootdir/extlinux.conf" && "$usbpartType" = "ext4" ]]; then
+    cp -f $UBUKEYDIR/conf_files/extlinux.conf "$bootdir/"
 fi
 
 if [ "$X64" == "true" ]; then	
@@ -836,6 +863,8 @@ else
 	usbpartMountType="ext4"
 	usbpartFormatType="ext4"
 fi
+
+echo -e "\nFormat de partition: $usbpartType \n"
 }
 
 
@@ -1146,7 +1175,6 @@ function wait_valid () {
 			sec=$(( $sec+1 ))
 		fi
 	done 
-		
 }
 
 ##########################################################
