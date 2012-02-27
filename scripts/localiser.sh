@@ -26,7 +26,7 @@ sudo aptitude -y purge `dpkg -l | awk '{print $2}' | egrep "language-pack|aspell
 
 #################### 
 #installe paquets fr
-sudo aptitude -y install language-pack-$LOCALSIMPLE language-pack-$LOCALSIMPLE-base aspell-$LOCALSIMPLE gimp-help-$LOCALSIMPLE ifrench-gut language-support-$LOCALSIMPLE language-support-translations-$LOCALSIMPLE language-support-writing-$LOCALSIMPLE myspell-$LOCALSIMPLE-gut openoffice.org-help-$LOCALSIMPLE openoffice.org-l10n-$LOCALSIMPLE thunderbird-locale-$LOCALSIMPLE wfrench language-pack-gnome-$LOCALSIMPLE language-pack-gnome-$LOCALSIMPLE-base
+sudo aptitude -y install language-pack-$LOCALSIMPLE language-pack-$LOCALSIMPLE-base aspell-$LOCALSIMPLE ifrench-gut language-support-$LOCALSIMPLE language-support-translations-$LOCALSIMPLE language-support-writing-$LOCALSIMPLE myspell-$LOCALSIMPLE-gut openoffice.org-help-$LOCALSIMPLE openoffice.org-l10n-$LOCALSIMPLE thunderbird-locale-$LOCALSIMPLE wfrench language-pack-gnome-$LOCALSIMPLE language-pack-gnome-$LOCALSIMPLE-base
 
 ############ 
 # localepurge

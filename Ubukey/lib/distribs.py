@@ -21,8 +21,8 @@ class Distribs(object):
             
     def start(self):
         self.chroot_script = os.path.join(scripts_path,'dochroot.sh')
-        crun = os.popen("ps aux | grep -e "+scripts_path+'/dochroot'" | grep -v 'grep'").read().strip()
-        xrun = os.popen("ps aux | grep -e "+scripts_path+'/startchroot'" | grep -v 'grep'").read().strip()
+        crun = os.popen("ps aux | grep '/bin/bash' | grep -e "+scripts_path+'/dochroot'" | grep -v 'grep'").read().strip()
+        xrun = os.popen("ps aux | grep '/bin/bash' | grep -e "+scripts_path+'/startchroot'" | grep -v 'grep'").read().strip()
         if not crun == '' or not xrun == '':
             print "a session is already running"
             return

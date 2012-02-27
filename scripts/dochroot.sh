@@ -131,10 +131,11 @@ cp /etc/hosts "${DISTDIR}"/chroot/etc/ -f
 ## determine quelle session tourne actuellement (tres chiant)
 if [[ `ps aux | grep -e "[g]nome-settings-daemon" ` ]]; then
 	localSession="gnome"
-	starter = "gnome-session"
+	starter="gnome-session"
 	if [[ `lsb_release -cs | grep -E "precise||oneiric"` ]]; then
 	    rm /tmp/zenity
 	    echo -e 'zenity --list --checklist --width 650 --height 500 --title "Choix de la session" --column "choix" --column "Session" --text "choisissez la session a demarrer" \\'  | tee /tmp/zenity &>/dev/null
+	    echo -e "FALSE \"xterm\" \\" | tee -a /tmp/zenity &>/dev/null
 	    for i in `ls "${DISTDIR}"/chroot/usr/share/xsessions | sed -e 's/.desktop//'`; do
 	    echo -e "FALSE \"$i\" \\" | tee -a /tmp/zenity &>/dev/null
 	    done
@@ -145,7 +146,11 @@ if [[ `ps aux | grep -e "[g]nome-settings-daemon" ` ]]; then
 	    res="`echo $MENU | sed 's/|/ /g' | awk '{print $1}'`"
 
 	    if [ -n $res ]; then
-	    starter="gnome-session --session=$res"
+		if [ $res = "xterm" ]; then
+		    starter="xterm"
+		else
+		    starter="gnome-session --session=$res"
+		fi
 	    else
 	    starter="gnome-session"
 	    fi
@@ -301,18 +306,6 @@ $LOCALBASE
 $LOCALUTF
 " | tee /etc/locale.gen &>/dev/null
 
-message "
-#########################
-## Variables du chroot ##
-#########################
-
-Type de session : "$sessionType"
-Utilisateur session chroot : "$USER"
-Utilisateur reel du live-cd : "$chuser"
-Locales : $LOCALUTF
-Langue : $LOCALSIMPLE
-Clavier: $LOCALSIMPLE
-"
 
 #monter minimun necessaire
 mount -t proc none /proc
@@ -360,6 +353,20 @@ esac
 
 function CHROOTGRAPHIQUE()
 {
+
+message "
+#########################
+## Variables du chroot ##
+#########################
+
+Type de session : "$sessionType"
+Utilisateur session chroot : "$USER"
+Utilisateur reel du live-cd : "$chuser"
+Locales : $LOCALUTF
+Langue : $LOCALSIMPLE
+Clavier: $LOCALSIMPLE
+Decorateur : $decorator
+"
 
 ## au cas ou
 rm /etc/skel/skel &>/dev/null
@@ -560,6 +567,9 @@ xauth generate :5 .
 message "Tout est pret, demarre X dans le chroot ! \n"
 
 message "starter = $starter"
+if [[ `echo "$starter" | grep xterm` ]]; then
+    starter="xterm & '$decorator' --replace"
+fi
 chown -hR "$USER":"$USER" /etc/skel
 
 echo '#!/bin/bash
