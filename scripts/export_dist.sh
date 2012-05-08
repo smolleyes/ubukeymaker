@@ -298,12 +298,12 @@ cd "${DISTDIR}"
 echo -e "Squashfs et fichiers manifest ok ! \n"
 sleep 5
 
-echo -e "Calcule la taille du dossier chroot pour le fichier filesystem.size..."
-printf $(sudo du -sx --block-size=1 chroot | cut -f1) > "${DISTDIR}"/usb/casper/filesystem.size
-if [[ ! -e "${DISTDIR}"/usb/casper/filesystem.size || -z `cat "${DISTDIR}"/usb/casper/filesystem.size` ]]; then
- echo "can't generate the filesystem.size file, exit..."
- exit 0
-fi
+# echo -e "Calcule la taille du dossier chroot pour le fichier filesystem.size..."
+# printf $(sudo du -sx --block-size=1 chroot | cut -f1) > "${DISTDIR}"/usb/casper/filesystem.size
+# if [[ ! -e "${DISTDIR}"/usb/casper/filesystem.size || -z `cat "${DISTDIR}"/usb/casper/filesystem.size` ]]; then
+#  echo "can't generate the filesystem.size file, exit..."
+#  exit 0
+# fi
 generate=""
 }
 

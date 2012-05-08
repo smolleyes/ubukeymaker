@@ -21,149 +21,32 @@ function create_dist()
 
 	## menu selection choix distrib a preparer 
 	DISTCHOICE=`zenity --width=600 --height=500 --title "Choix Distribution a preparer" --list \
-		--radiolist --column "Choix" --column "Action" --column "Description" \
+		--radiolist --column "Choix" --column "Distribution" --column "Description" \
 		--text "Choisissez le type de distribution a utiliser
 
 	<span color=\"red\">Information:</span>
 	Si vous comptez utiliser un iso perso ou d'une autre distribution
 	Choisissez son equivalence (gnome, kde, xfce etc...)
 	" \
-		FALSE "Ubuntu-Maverick" "Préparer pour ubuntu maverick" \
-		FALSE "Ubuntu-Maverick-64" "Préparer pour ubuntu maverick 64 bits" \
-		FALSE "Kubuntu-Maverick" "Préparer pour kubuntu maverick" \
-		FALSE "Kubuntu-Maverick-64" "Préparer pour kubuntu maverick 64 bits" \
-		FALSE "Xubuntu-Maverick" "Préparer pour xubuntu maverick" \
-		FALSE "Xubuntu-Maverick-64" "Préparer pour xubuntu maverick 64 bits" \
-		FALSE "Lubuntu-Maverick" "Préparer pour lubuntu maverick (lxde)" \
-		FALSE "Ubuntu-lucid" "Préparer pour ubuntu lucid" \
-		FALSE "Ubuntu-lucid-64" "Préparer pour ubuntu lucid 64 bits" \
-		FALSE "Kubuntu-lucid" "Préparer pour kubuntu lucid" \
-		FALSE "Kubuntu-lucid-64" "Préparer pour kubuntu lucid 64 bits" \
-		FALSE "Xubuntu-lucid" "Préparer pour xubuntu lucid" \
-		FALSE "Xubuntu-lucid-64" "Préparer pour xubuntu lucid 64 bits" \
-		FALSE "Ubuntu-netbook-remix" "Préparer pour u.n.r lucid (pour mini-pc)" \
-		FALSE "Lubuntu" "Préparer pour lubuntu lucid (lxde)" \
-		FALSE "Oneiric" "Préparer pour ubuntu oneiric daily (gnome)" \
-		FALSE "Precise-pangolin" "Ubuntu precise pangolin daily build" \
+		FALSE "Precise-pangolin" "Ubuntu precise pangolin" \
 		FALSE "Custom" "Préparer vos distribution par debootstrap (Expert!)"
 	`
-
+	# cd /tmp
+	# rm MD5* >/dev/null
+	# wget http://cdimage.ubuntu.com/daily-live/current/MD5SUMS
+	# MD5SUM=$(cat MD5SUMS | grep desktop-i386 | awk '{print $1}')
 	case $DISTCHOICE in
-		Ubuntu-Maverick)
-		ISOURL="http://releases.ubuntu.com/maverick/ubuntu-10.10-desktop-i386.iso"
-		ISONAME="ubuntu-10.10-desktop-i386.iso"
-		MD5SUM="59d15a16ce90c8ee97fa7c211b7673a8"
-		ISOTYPE="gnome"
-		;;
-		Ubuntu-Maverick-64)
-		ISOURL="http://releases.ubuntu.com/maverick/ubuntu-10.10-desktop-amd64.iso"
-		ISONAME="ubuntu-10.10-desktop-amd64.iso"
-		MD5SUM="1b9df87e588451d2ca4643a036020410"
-		ISOTYPE="gnome"
-		;;
-		Kubuntu-Maverick)
-		ISOURL="http://releases.ubuntu.com/kubuntu/10.10/kubuntu-10.10-desktop-i386.iso"
-		ISONAME="kubuntu-10.10-desktop-i386.iso"
-		MD5SUM="da50a1ddb22060a2abda6823c9d1148d"
-		ISOTYPE="kde4"
-		;;
-		Kubuntu-Maverick-64)
-		ISOURL="http://releases.ubuntu.com/kubuntu/10.10/kubuntu-10.10-desktop-amd64.iso"
-		ISONAME="kubuntu-10.10-desktop-amd64.iso"
-		MD5SUM="760c15562bdffba54f23852a5d47db4e"
-		ISOTYPE="kde4"
-		;;
-		Xubuntu-Maverick)
-		ISOURL="http://se.archive.ubuntu.com/mirror/cdimage.ubuntu.com/xubuntu/releases/10.10/release/xubuntu-10.10-desktop-i386.iso"
-		ISONAME="xubuntu-10.10-desktop-i386.iso"
-		MD5SUM="ea9ecc3486e8c2994d8779bbf5ad1b96"
-		ISOTYPE="xfce4"
-		;;
-		Xubuntu-Maverick-64)
-		ISOURL="http://se.archive.ubuntu.com/mirror/cdimage.ubuntu.com/xubuntu/releases/10.10/release/xubuntu-10.10-desktop-amd64.iso"
-		ISONAME="xubuntu-10.10-desktop-amd64.iso"
-		MD5SUM="c1747b3760ae9886f679facb28fd0e98"
-		ISOTYPE="xfce4"
-		;;
-		Lubuntu-Maverick)
-		ISOURL="http://people.ubuntu.com/~gilir/lubuntu-10.10.iso"
-		ISONAME="lubuntu-10.10.iso"
-		MD5SUM="098254aeb0153b10bcfce948c43a0df6"
-		ISOTYPE="lxde"
-		;;
-		
-		Ubuntu-lucid)
-		ISOURL="http://mirror.ovh.net/ubuntu-releases/lucid/ubuntu-10.04-desktop-i386.iso"
-		ISONAME="ubuntu-10.04-desktop-i386.iso"
-		MD5SUM="d044a2a0c8103fc3e5b7e18b0f7de1c8"
-		ISOTYPE="gnome"
-		;;
-		
-		Ubuntu-lucid-64)
-		ISOURL="http://mirror.ovh.net/ubuntu-releases/lucid/ubuntu-10.04-desktop-amd64.iso"
-		ISONAME="ubuntu-10.04-desktop-amd64.iso"
-		MD5SUM="3e0f72becd63cad79bf784ac2b34b448"
-		ISOTYPE="gnome"
-		;;
-
-		Kubuntu-lucid)
-		ISOURL="http://mirror.ovh.net/ubuntu-releases/kubuntu/10.04/kubuntu-10.04-desktop-i386.iso"
-		ISONAME="kubuntu-10.04-desktop-i386.iso"
-		MD5SUM="0ef722fd6b348e9dcf03812d071d68ba"
-		ISOTYPE="kde4"
-		;;
-		
-		Kubuntu-lucid-64)
-		ISOURL="http://mirror.ovh.net/ubuntu-releases/kubuntu/10.04/kubuntu-10.04-desktop-amd64.iso"
-		ISONAME="kubuntu-10.04-desktop-amd64.iso"
-		MD5SUM="5b256bf515ae49749ac03a1af9d407c0"
-		ISOTYPE="kde4"
-		;;
-		
-		Xubuntu-lucid)
-		ISOURL="http://cdimage.ubuntu.com/xubuntu/releases/10.04/release/xubuntu-10.04-desktop-i386.iso"
-		ISONAME="xubuntu-10.04-desktop-i386.iso"
-		MD5SUM="7f064bc012025a5307ef6d81b0bc4c87"
-		ISOTYPE="xfce4"
-		;;
-		
-		Xubuntu-lucid-64)
-		ISOURL="http://cdimage.ubuntu.com/xubuntu/releases/10.04/release/xubuntu-10.04-desktop-amd64.iso"
-		ISONAME="xubuntu-10.04-desktop-amd64.iso"
-		MD5SUM="49d29d11c3eb51f862641a934c86dd79"
-		ISOTYPE="xfce4"
-		;;
-		
-		Ubuntu-netbook-remix)
-		ISOURL="http://mirror.ovh.net/ubuntu-releases/lucid/ubuntu-10.04-netbook-i386.iso"
-		ISONAME="ubuntu-10.04-netbook-i386.iso"
-		MD5SUM="712277c7868ab374c4d3c73cff1d95cb"
-		ISOTYPE="gnome"
-		;;
-		
-		Lubuntu)
-		ISOURL="http://people.ubuntu.com/%7Egilir/lubuntu-10.04.iso"
-		ISONAME="lubuntu-10.04.iso"
-		MD5SUM="386a227968cbabc89e1a23b95035160e"
-		ISOTYPE="lxde"
-		;;
-		Oneiric-daily)
-		ISOURL="http://cdimage.ubuntu.com/daily-live/current/oneiric-desktop-i386.iso"
-		ISONAME="oneiric-desktop-i386.iso"
-		cd /tmp
-		rm MD5* >/dev/null
-		wget http://cdimage.ubuntu.com/daily-live/current/MD5SUMS
-		MD5SUM=$(cat MD5SUMS | grep desktop-i386 | awk '{print $1}')
-		ISOTYPE="gnome"
-		;;
 		Precise-pangolin)
-		ISOURL="http://cdimage.ubuntu.com/daily-live/current/precise-desktop-i386.iso"
-		ISONAME="precise-desktop-i386.iso"
-		cd /tmp
-		rm MD5* >/dev/null
-		wget http://cdimage.ubuntu.com/daily-live/current/MD5SUMS
-		MD5SUM=$(cat MD5SUMS | grep desktop-i386 | awk '{print $1}')
+		ISOURL="http://ubuntu.mirrors.proxad.net/12.04/ubuntu-12.04-desktop-i386.iso"
+		ISONAME="ubuntu-12.04-desktop-i386.iso"
 		ISOTYPE="gnome"
+		MD5SUM="d791352694374f1c478779f7f4447a3f"
+		;;
+		Precise-pangolin-64)
+		ISOURL="http://ubuntu.mirrors.proxad.net/12.04/ubuntu-12.04-desktop-amd64.iso"
+		ISONAME="ubuntu-12.04-desktop-amd64.iso"
+		ISOTYPE="gnome"
+		MD5SUM="128f0c16f4734c420b0185a492d92e52"
 		;;
 		Custom)
 		/bin/bash $UBUKEYDIR/scripts/debootstrap_dist.sh "$WORK"
@@ -171,7 +54,6 @@ function create_dist()
 		;;
 		
 		*) 
-		END
 		exit 1
 		;;
 		
