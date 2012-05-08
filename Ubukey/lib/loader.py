@@ -13,12 +13,9 @@ def checkConf():
         if path and path_exist(path):
             os.makedirs(conf_path, 0755)
             print "selected path : %s" % path
-            listdir = ("distribs","isos","temp","addons/lucid",
-                       "addons/lucid/gnome","addons/lucid/kde4",
-                       "addons/lucid/xfce4","addons/lucid/lxde",
-                       "addons/custom","addons/maverick",
-                       "addons/maverick/gnome","addons/maverick/kde4",
-                       "addons/maverick/xfce4","addons/maverick/lxde",
+            listdir = ("distribs","isos","temp","addons/precise",
+                       "addons/precise/gnome","addons/precise/kde4",
+                       "addons/precise/xfce4","addons/precise/lxde",
                        "addons/custom","addons/all")
             for d in listdir:
                 target = os.path.join(path,d)
