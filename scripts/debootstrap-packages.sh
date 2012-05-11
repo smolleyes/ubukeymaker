@@ -20,7 +20,7 @@ lang=$(env | grep -w "LANG" | sed -e 's/\..*//;s/LANG=//;s/_.*//')
 packageList="$(echo "$packages" | sed -e '/^#/d;s/\"//g' | xargs)"
 echo "checking packages availability..."
 for p in $packageList ;do 
-	if [[ `apt-cache search $p | grep $p` ]]; then 
+	if [[ `chroot "$DISTDIR"/chroot apt-cache search $p | grep $p` ]]; then 
 		echo "package $p installable"
 		echo "$p" | tee -a /tmp/pack &>/dev/null
 	else 
