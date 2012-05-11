@@ -142,8 +142,8 @@ MENU=$(/tmp/zenity)
 res="`echo $MENU | sed 's/|/ /g' | awk '{print $1}'`"
 starter="xterm"
 
-if [ -n $res ]; then
-	if [ $res != "xterm" ]; then
+if [ -n "$res" ]; then
+	if [ "$res" != "xterm" ]; then
     	starter="$(cat "${DISTDIR}/chroot/usr/share/xsessions/$res.desktop" | grep ^Exec | sed 's/Exec=//')"
 	fi
 fi

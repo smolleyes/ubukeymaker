@@ -61,6 +61,8 @@ rsync -uravH --delete --exclude="*~,*.git" $UBUKEYDIR/. "${DISTDIR}"/chroot/usr/
 ## install xterm and some essentials packages for the script
 echo -e "Installation de paquets essentiels au script \n"
 cp /etc/resolv.conf "$DISTDIR"/chroot/etc
+cp $UBUKEYDIR/scripts/ubusrc-gen "$DISTDIR"/chroot/usr/local/bin
+chmod +x "$DISTDIR"/chroot/usr/local/bin/ubusrc-gen
 mkdir "$DISTDIR"/chroot/dev &>/dev/null
 mount -o bind /dev "$DISTDIR"/chroot/dev
 
@@ -69,12 +71,10 @@ chroot "$DISTDIR"/chroot << EOF
 mount -t devpts none /dev/pts
 mount -t proc none /proc
 mount -t sysfs none /sys
+## generate new sources.list
+ubusrc-gen
 apt-get update
 apt-get -y install lsb-release xterm aptitude wget zenity upstart
-
-## generate new sources.list
-chmod +x $UBUKEYDIR/scripts/ubusrc-gen
-/bin/bash $UBUKEYDIR/scripts/ubusrc-gen
 
 EOF
 
