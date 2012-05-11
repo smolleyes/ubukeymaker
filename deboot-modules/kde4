@@ -38,7 +38,6 @@ lupin-casper
 # DOCS and locales
 ############
 language-pack-kde-$lang
-language-support-$lang
 kde-l10n-$lang
 
 # KERNEL
@@ -50,6 +49,6 @@ ubuntu-restricted-extras
 
 # X-server
 #############
-x-window-system-core
+xorg
 
 "

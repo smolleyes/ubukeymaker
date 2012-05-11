@@ -70,11 +70,11 @@ mount -t devpts none /dev/pts
 mount -t proc none /proc
 mount -t sysfs none /sys
 apt-get update
-apt-get -y install lsb-release xterm aptitude wget zenity
+apt-get -y install lsb-release xterm aptitude wget zenity upstart
 
 ## generate new sources.list
-chmod +x /usr/share/ubukey/scripts/ubusrc-gen
-/bin/bash /usr/share/ubukey/scripts/ubusrc-gen
+chmod +x $UBUKEYDIR/scripts/ubusrc-gen
+/bin/bash $UBUKEYDIR/scripts/ubusrc-gen
 
 EOF
 

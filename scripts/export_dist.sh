@@ -289,6 +289,8 @@ for i in $REMOVE
 do
 	sudo sed -i "/${i}/d" "${DISTDIR}"/usb/casper/filesystem.manifest-desktop
 done
+# clean cache apt
+rm -R "${DISTDIR}"/chroot/var/lib/apt/lists/*
 
 echo -e "regenere le fichier squashfs \n"
 cd "${DISTDIR}"/chroot

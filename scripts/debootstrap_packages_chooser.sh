@@ -27,7 +27,7 @@ zenity --list --checklist \
 FALSE lightdm \
 FALSE gdm \
 FALSE kdm \
-FALSE xdm \
+FALSE lxdm \
 '
 }
 

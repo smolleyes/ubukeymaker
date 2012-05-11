@@ -128,34 +128,29 @@ echo "localutf=$LOCALUTF" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/
 echo "mode=safe" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 cp /etc/hosts "${DISTDIR}"/chroot/etc/ -f
 
+## choix session chroot
+rm /tmp/zenity
+echo -e 'zenity --list --checklist --width 650 --height 500 --title "Choix de la session" --column "choix" --column "Session" --text "choisissez la session a demarrer" \\'  | tee /tmp/zenity &>/dev/null
+echo -e "FALSE \"xterm\" \\" | tee -a /tmp/zenity &>/dev/null
+for i in `ls "${DISTDIR}"/chroot/usr/share/xsessions | grep ".desktop" | sed -e 's/.desktop//'`; do
+	echo -e "FALSE \"$i\" \\" | tee -a /tmp/zenity &>/dev/null
+done
+
+chmod +x /tmp/zenity
+MENU=$(/tmp/zenity)
+
+res="`echo $MENU | sed 's/|/ /g' | awk '{print $1}'`"
+starter="xterm"
+
+if [ -n $res ]; then
+	if [ $res != "xterm" ]; then
+    	starter="$(cat "${DISTDIR}/chroot/usr/share/xsessions/$res.desktop" | grep ^Exec | sed 's/Exec=//')"
+	fi
+fi
+
 ## determine quelle session tourne actuellement (tres chiant)
 if [[ `ps aux | grep -e "[g]nome-settings-daemon" ` ]]; then
 	localSession="gnome"
-	starter="gnome-session"
-	if [[ `lsb_release -cs | grep -E "precise||oneiric"` ]]; then
-	    rm /tmp/zenity
-	    echo -e 'zenity --list --checklist --width 650 --height 500 --title "Choix de la session" --column "choix" --column "Session" --text "choisissez la session a demarrer" \\'  | tee /tmp/zenity &>/dev/null
-	    echo -e "FALSE \"xterm\" \\" | tee -a /tmp/zenity &>/dev/null
-	    for i in `ls "${DISTDIR}"/chroot/usr/share/xsessions | sed -e 's/.desktop//'`; do
-	    echo -e "FALSE \"$i\" \\" | tee -a /tmp/zenity &>/dev/null
-	    done
-
-	    chmod +x /tmp/zenity
-	    MENU=$(/tmp/zenity)
-
-	    res="`echo $MENU | sed 's/|/ /g' | awk '{print $1}'`"
-
-	    if [ -n $res ]; then
-		if [ $res = "xterm" ]; then
-		    starter="xterm"
-		else
-		    starter="gnome-session --session=$res"
-		fi
-	    else
-	    starter="gnome-session"
-	    fi
-	fi
-	echo "session_starter=$starter" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 elif [[ `ps aux | grep -e "[k]ded4" ` && ! `ps aux | grep -e "[g]nome-settings-daemon"` ]]; then
 	localSession="kde4"
 elif [[ `ps aux | grep -e "[x]fsettingsd"` ]]; then
@@ -166,6 +161,7 @@ else
 	echo -e "Type de session locale non détéctée, ou non supportée vous utilisez e17, fluxbox ???... 
 aucun thème ne sera copié"
 fi
+echo "session_starter=$starter" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 
 ## check zenity
 if [[ ! -e "${DISTDIR}/chroot/usr/bin/zenity" && ! $sessionType = "console" ]]; then
@@ -290,7 +286,7 @@ LOCALBASE="$(cat /etc/ubukey/ubukeyconf | grep -e "localbase" | sed 's/.*=//')"
 LOCALSIMPLE="$(cat /etc/ubukey/ubukeyconf | grep -e "localsimple" | sed 's/.*=//')"
 DIST="$(cat /etc/lsb-release | grep CODENAME | sed 's/.*=//')"
 DRIVER="$(cat /etc/ubukey/ubukeyconf | grep -e "driver" | sed 's/.*=//')"
-session_starter="$(cat /etc/ubukey/ubukeyconf | grep -e "session_starter" | sed 's/session_starter=//')"
+starter="$(cat /etc/ubukey/ubukeyconf | grep -e "session_starter" | sed 's/session_starter=//')"
 hostVersion="$(cat /etc/ubukey/ubukeyconf | grep -e "hostVersion" | sed 's/hostVersion=//')"
 
 if [ "$sessionType" = "console" ]; then
@@ -326,26 +322,18 @@ case $sessionType in
 gnome)
 decorator="metacity"
 term="gnome-terminal"
-starter=$session_starter
 ;;
 kde4)
-decorator=kwin
-term=konsole
-starter=startkde
+decorator="kwin"
+term="konsole"
 ;;
 xfce4)
 decorator="xfwm4"
 term="xfterm4"
-starter=xfce4-session
 ;;
 lxde)
 decorator=""
 term="lxterminal"
-if [ -e "/usr/bin/startlubuntu" ]; then
-starter="startlubuntu"
-else
-starter="startlxde"
-fi
 ;;
 esac
 

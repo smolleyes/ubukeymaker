@@ -46,7 +46,6 @@ gtk2-engines-pixbuf
 # DOCS and locales
 ############
 language-selector
-language-support-$lang
 language-pack-$lang
 language-pack-gnome-$lang-base
 language-pack-gnome-$lang
@@ -60,6 +59,6 @@ ubuntu-restricted-extras
 
 # X-server
 #############
-x-window-system-core
+xorg
 
 "
