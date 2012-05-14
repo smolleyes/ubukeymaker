@@ -112,10 +112,14 @@ class Ubukey_gui(object):
         
         self.gladexml.signal_autoconnect(dic)
         ## calculate default window size (Xephyr s not resizable)
-        width = gtk.gdk.screen_width()
-        height = gtk.gdk.screen_height()
-        self.window.set_default_size((width - 50), (height - 80))
-        
+        #width = gtk.gdk.screen_width()
+        #height = gtk.gdk.screen_height()
+        #self.window.set_default_size((width - 50), (height - 80))
+        res = os.popen("xrandr --current | grep '*' | uniq | awk '{print $1}'", 'r').read().strip()
+        width,height = res.split('x')
+        if (width != '' and height != ''):
+            print "Xephyr's screen size : %s" % res
+            self.window.set_default_size((int(width) - 50), (int(height) - 80))
         ##  start gui widgets
         self.start_gui()
     

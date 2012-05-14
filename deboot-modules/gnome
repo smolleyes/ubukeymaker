@@ -7,7 +7,7 @@ gnome-core
 
 # display manager
 ################
-#gdm
+lightdm
 #slim
 
 # APT

@@ -29,6 +29,13 @@ function create_dist()
 	Choisissez son equivalence (gnome, kde, xfce etc...)
 	" \
 		FALSE "Precise-pangolin" "Ubuntu precise pangolin" \
+		FALSE "Precise-pangolin-64" "Ubuntu precise pangolin 64 bits" \
+		FALSE "Precise-kubuntu" "Kubuntu precise pangolin" \
+		FALSE "Precise-kubuntu-64" "Kubuntu precise pangolin 64 bits" \
+		FALSE "Precise-lubuntu" "Lbuntu precise pangolin" \
+		FALSE "Precise-lubuntu-64" "Lubuntu precise pangolin 64 bits" \
+		FALSE "Precise-xubuntu" "Xubuntu precise pangolin" \
+		FALSE "Precise-xubuntu-64" "Xubuntu precise pangolin 64 bits" \
 		FALSE "Custom" "Préparer vos distribution par debootstrap (Expert!)"
 	`
 	# cd /tmp
@@ -47,6 +54,42 @@ function create_dist()
 		ISONAME="ubuntu-12.04-desktop-amd64.iso"
 		ISOTYPE="gnome"
 		MD5SUM="128f0c16f4734c420b0185a492d92e52"
+		;;
+		Precise-kubuntu)
+		ISOURL="http://cdimage.ubuntu.com/kubuntu/releases/12.04/release/kubuntu-12.04-desktop-i386.iso"
+		ISONAME="kubuntu-12.04-desktop-i386.iso"
+		ISOTYPE="kde4"
+		MD5SUM="11cd581db5740a62d58eeb39824fc11f"
+		;;
+		Precise-kubuntu-64)
+		ISOURL="http://cdimage.ubuntu.com/kubuntu/releases/12.04/release/kubuntu-12.04-desktop-amd64.iso"
+		ISONAME="kubuntu-12.04-desktop-amd64.iso"
+		ISOTYPE="kde4"
+		MD5SUM="7fbb273e8764aeb307fecfaccb9e742f"
+		;;
+		Precise-xubuntu)
+		ISOURL="http://cdimage.ubuntu.com/xubuntu/releases/12.04/release/xubuntu-12.04-desktop-i386.iso"
+		ISONAME="xubuntu-12.04-desktop-i386.iso"
+		ISOTYPE="xfce4"
+		MD5SUM="52fddd81e75bb421a5435a42ca9ec6df"
+		;;
+		Precise-xubuntu-64)
+		ISOURL="http://cdimage.ubuntu.com/xubuntu/releases/12.04/release/xubuntu-12.04-desktop-amd64.iso"
+		ISONAME="xubuntu-12.04-desktop-amd64.iso"
+		ISOTYPE="xfce4"
+		MD5SUM="724224b8d62c7bccecdee6b82850c0e6"
+		;;
+		Precise-lubuntu)
+		ISOURL="http://cdimage.ubuntu.com/lubuntu/releases/12.04/release/lubuntu-12.04-desktop-i386.iso"
+		ISONAME="lubuntu-12.04-desktop-i386.iso"
+		ISOTYPE="lxde"
+		MD5SUM="0fc9564b8fde8ff56100c3d7814fa884"
+		;;
+		Precise-lubuntu-64)
+		ISOURL="http://cdimage.ubuntu.com/lubuntu/releases/12.04/release/lubuntu-12.04-desktop-amd64.iso"
+		ISONAME="lubuntu-12.04-desktop-amd64.iso"
+		ISOTYPE="lxde"
+		MD5SUM="fca2034b89e8a0acd6536d41ccec061c"
 		;;
 		Custom)
 		/bin/bash $UBUKEYDIR/scripts/debootstrap_dist.sh "$WORK"

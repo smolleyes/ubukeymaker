@@ -44,6 +44,8 @@ policykit-desktop-privileges
 udisks
 software-center
 wget
+gtk2-engines
+gtk2-engines-pixbuf
 ## for live-cd
 casper
 lupin-casper
