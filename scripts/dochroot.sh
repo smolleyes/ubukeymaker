@@ -545,6 +545,8 @@ dbus-daemon --system --fork
 dpkg-divert --local --rename --add /sbin/initctl
 ﻿ln -s /bin/true /sbin/initctl
 
+## disable screen lock
+sudo -u "$USER" dconf write /org/gnome/desktop/lockdown/disable-lock-screen true
 
 ############## STARTX #############################
 
@@ -630,13 +632,15 @@ chown -R root:root /etc/skel
 message "Verifie l'integritee des fichiers vmlinuz/initrd \n"
 
 kernel_count=$(ls -al /boot | grep initrd.img | wc | awk '{print $1}')
+echo "Kernel count : $kernel_count"
 
-if [ "$kernel_count" >= 2 ]; then
+if  [[ $kernel_count -gt 1 ]]; then
 list=$(ls /boot | grep initrd.img | sed '$d')
 echo -e "$list" | while read line; do
 ver=$(echo -e $line | sed 's/.*initrd.img-//')
 message "\nSuppression du kernel et headers version $ver \n"
 apt-get remove -y --purge `dpkg -l | grep $ver | awk '{print $2}' | xargs`
+rm /vmlinuz.old
 done
 fi
 
@@ -645,7 +649,7 @@ apt-get -y --force-yes install initramfs-tools
 fi
 
 ## clean en cas de mise a jour du kernel important !!
-if [ -e "/vmlinuz.old" ]; then
+if [[ -e "/vmlinuz.old" && $kernel_count -gt 1 ]]; then
 toRemove=$(ls -al /vmlinuz.old | sed 's/.*boot\/vmlinuz-//')
 sleep 2
 
