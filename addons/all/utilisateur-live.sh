@@ -47,6 +47,7 @@ export USERNAME=\"$USER_LIVEUSB\"
 export USERFULLNAME=\"Session de $USER_LIVEUSB\"
 export HOST=\"$USER_LIVEUSB\"
 export BUILD_SYSTEM=\"$USER_LIVEUSB\"
+export FLAVOUR=\"$USER_LIVEUSB\"
 "
 echo -e "$CHANGE_USER" | tee /etc/casper.conf &>/dev/null
 
