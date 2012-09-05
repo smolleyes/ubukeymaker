@@ -184,7 +184,7 @@ sleep 3
 
 function CHOIX_PASS()
 {
-CHEMIN_USER="/usr/share/initramfs-tools/scripts/casper-bottom/10adduser"
+CHEMIN_USER="/usr/share/initramfs-tools/scripts/casper-bottom/25adduser"
 TEST_PASS=$(cat "$CHEMIN_USER" | grep -e "set passwd/user-password-crypted U6aMy0wojraho")
 
 if [[ -e "$CHEMIN_USER" && -n "$TEST_PASS" || -n "$FORCEPWD" ]]; then
@@ -311,7 +311,7 @@ fi
 
 function CHECKPASS()
 {
-CHEMIN_USER="/usr/share/initramfs-tools/scripts/casper-bottom/10adduser"
+CHEMIN_USER="/usr/share/initramfs-tools/scripts/casper-bottom/25adduser"
 TEST_PASS=$(cat "$CHEMIN_USER" | grep -e "set passwd/user-password-crypted U6aMy0wojraho")
 
 ## check is password a deja ete modifie ou pas
