@@ -310,6 +310,8 @@ mount -t devpts none /dev/pts
 
 umount -f /lib/modules/*/volatile &>/dev/null
 
+
+
 ## check sources
 message "Verification des sources, merci de patienter"
 #/bin/bash $UBUKEYDIR/scripts/themescan.sh
@@ -366,6 +368,9 @@ cd /etc/skel
 ## create user and sudo
 if [ ! -e '/usr/bin/sudo' ]; then
 apt-get install -f --force-yes sudo
+fi
+if [ ! -e '/usr/bin/dconf-editor' ]; then
+apt-get install -f --force-yes dconf-tools
 fi
 useradd -s /bin/bash -M "$USER"
 ## check user creation
@@ -542,8 +547,12 @@ mkdir /var/run/dbus/ 2>/dev/null
 dbus-uuidgen > /var/lib/dbus/machine-id
 /etc/init.d/dbus start
 dbus-daemon --system --fork
+## fix initctl
 dpkg-divert --local --rename --add /sbin/initctl
 ﻿ln -s /bin/true /sbin/initctl
+if [[ ! -e /sbin/initctl && -e /sbin/initctl.distrib ]]; then
+ln -s /sbin/initctl.distrib /sbin/initctl
+fi
 
 ## disable screen lock
 sudo -u "$USER" dconf write /org/gnome/desktop/lockdown/disable-lock-screen true
@@ -575,6 +584,10 @@ xterm -title "Close this window to exit your session" -display :5 -e startchroot
 function CLEANCHROOT()
 {
 message "Sortie du chroot ok, Nettoyage\n"
+
+if [ ! -e "/usr/bin/X" ]; then
+apt-get -y --force-yes install xserver-xorg
+fi
 
 ## check kde4
 ## si autologin activé changes utilisateur en rapport avec /etc/casper.conf
@@ -732,7 +745,7 @@ dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null
 ## remet a jour les sources....
 
 ## clean group and passwd files
-deluser "$USER"
+deluser "$USER" &>/dev/null
 message "Verifie l integritee des fichiers passwd/groups et shadow \n"
 sed -i '/^[^:]*:[^:]*:[1-9][0-9][0-9][0-9]:/d' /etc/passwd
 sed -i '/^[^:]*:[^:]*:[12][0-9][0-9][0-9][0-9]:/d' /etc/passwd
@@ -782,7 +795,8 @@ rm /etc/X11/xorg.conf  &>/dev/null
 rm -R -f /var/crash/* &>/dev/null
 rm -R -f /tmp/.* &>/dev/null
 rm -R -f /root/* &>/dev/null
- 
+rm -R -f /*.old &>/dev/null
+
 ## more info for damn adduser under live-session
 sed -i 's/user-setup-apply > \/dev\/null/user-setup-apply/' /usr/share/initramfs-tools/scripts/casper-bottom/10adduser &>/dev/null
 rm /var/lib/dbus/machine-id
@@ -815,7 +829,8 @@ safe=""
 mode=""
 kill -9 `lsof -atw "${DISTDIR}"/chroot | xargs ` &>/dev/null
 
-sleep 3
+echo -e "Nettoyage final de la distribution..."
+chroot "${DISTDIR}"/chroot deluser "$USER" &>/dev/null
 ## remet bien le /root dans passwd...
 #sed -i 's/\/home\/'$USER'/\/root/' "${DISTDIR}"/chroot/etc/passwd
 mv "${DISTDIR}"/chroot/etc/mtab-save "${DISTDIR}"/chroot/etc/mtab
@@ -831,16 +846,16 @@ fi
 
 ## nettoie et re verifie fichiers de conf
 rm -f ${DISTDIR}/chroot/etc/skel/*/{ubukey-assist,quit-chroot,gc}.desktop  &>/dev/null
-umount -l -f ${DISTDIR}/chroot/media/pc-local &>/dev/null
-umount -l -f ${DISTDIR}/chroot/proc/sys/fs/binfmt_misc binfmt_misc  &>/dev/null
-umount -l -f ${DISTDIR}/chroot/proc &>/dev/null
-umount -l -f ${DISTDIR}/chroot/sys &>/dev/null
-umount -l -f ${DISTDIR}/chroot/dev/pts &>/dev/null
-umount -l -f ${DISTDIR}/chroot/dev &>/dev/null
+umount -l -f "${DISTDIR}"/chroot/media/pc-local &>/dev/null
+umount -l -f "${DISTDIR}"/chroot/proc/sys/fs/binfmt_misc binfmt_misc  &>/dev/null
+umount -l -f "${DISTDIR}"/chroot/proc &>/dev/null
+umount -l -f "${DISTDIR}"/chroot/sys &>/dev/null
+umount -l -f "${DISTDIR}"/chroot/dev/pts &>/dev/null
+umount -l -f "${DISTDIR}"/chroot/dev &>/dev/null
 umount -f "${DISTDIR}"/chroot/var/run/dbus &>/dev/null
 rm "${DISTDIR}"/chroot/var/run/* &>/dev/null
-umount -l -f ${DISTDIR}/chroot/media/pc-local/media &>/dev/null
-umount -l -f ${DISTDIR}/chroot/media/pc-local/home &>/dev/null
+umount -l -f "${DISTDIR}"/chroot/media/pc-local/media
+umount -l -f "${DISTDIR}"/chroot/media/pc-local/home
 umount /dev/loop* -l -f &>/dev/null
 if [[ ! `mount | grep "pc-local"` ]]; then
 	rm -R "${DISTDIR}"/chroot/media/pc-local &>/dev/null

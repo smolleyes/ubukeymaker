@@ -293,6 +293,8 @@ done
 rm -R "${DISTDIR}"/chroot/var/lib/apt/lists/*
 
 echo -e "regenere le fichier squashfs \n"
+umount -l -f "${DISTDIR}"/chroot/media/pc-local/media &>/dev/null
+umount -l -f "${DISTDIR}"/chroot/media/pc-local/home &>/dev/null
 cd "${DISTDIR}"/chroot
 mksquashfs . "${DISTDIR}"/usb/casper/filesystem.squashfs
 
