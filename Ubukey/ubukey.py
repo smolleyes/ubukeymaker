@@ -46,6 +46,12 @@ class Ubukey_gui(object):
         self.vbox_img.set_from_pixbuf(img)
         ## dist logo
         self.distlogo = self.gladexml.get_widget('distlogo_img')
+        ## multiboot btn
+        self.mboot_img = self.gladexml.get_widget('multiboot_img')
+        img = gtk.gdk.pixbuf_new_from_file_at_scale(os.path.join(data_path,'images/multisystem-liveusb.png'), 24, 24, 1)
+        self.mboot_img.set_from_pixbuf(img)
+        ## drawingarea
+        self.drawarea=self.gladexml.get_widget('mboot_drawing')
         
         ## dist list treeview
         self.dist_scroll = self.gladexml.get_widget("dist_scroll")
@@ -108,6 +114,7 @@ class Ubukey_gui(object):
                "on_edit_plug_btn_clicked" : self.edit_plug,
                "on_del_plug_btn_clicked" : self.delete_plug,
                "on_refresh_plug_btn_clicked" : self.options_dialog,
+               "on_multiboot_btn_clicked" : self.start_multiboot
                }
         
         self.gladexml.signal_autoconnect(dic)
@@ -224,6 +231,9 @@ class Ubukey_gui(object):
 	
     def edit_plug(self,widget):
 		self.distribs.edit_plug()
+        
+    def start_multiboot(self,widget):
+        self.distribs.start_multiboot()
         
     def exit(self,window=None,event=None):
         os.system("kill -9 `ps aux | grep bash | grep ubukey | grep .sh | awk '{print $2}' |xargs`")

@@ -135,29 +135,29 @@ class Distribs(object):
         self.update_list()
         
     def options_dialog(self):
-		self.optwin = self.gui.opt_dialog
-		self.optwin.set_position("center")
-		self.gui.plugins_model.clear()
-		for root, dirnames, filenames in os.walk(os.path.join(self.main_dist_path,'addons/custom')):
-			for filename in fnmatch.filter(filenames, '*.sh'):
-				self.add_plugin_model(filename, root)
-		self.gui.plug_scroll.show_all()
-		response = self.optwin.run()
-		if response == gtk.RESPONSE_DELETE_EVENT or response == gtk.RESPONSE_CANCEL:
-			self.optwin.hide()
+	self.optwin = self.gui.opt_dialog
+	self.optwin.set_position("center")
+	self.gui.plugins_model.clear()
+	for root, dirnames, filenames in os.walk(os.path.join(self.main_dist_path,'addons/custom')):
+		for filename in fnmatch.filter(filenames, '*.sh'):
+			self.add_plugin_model(filename, root)
+	self.gui.plug_scroll.show_all()
+	response = self.optwin.run()
+	if response == gtk.RESPONSE_DELETE_EVENT or response == gtk.RESPONSE_CANCEL:
+		self.optwin.hide()
 			
     def delete_plug(self):
-		try:
-			print "removing the plugin %s " % self.gui.selected_plug_path
-			os.remove(self.gui.selected_plug_path)
-			self.gui.plugins_model.remove(self.gui.plug_iter)
-		except:
-			return
+	try:
+	    print "removing the plugin %s " % self.gui.selected_plug_path
+	    os.remove(self.gui.selected_plug_path)
+	    self.gui.plugins_model.remove(self.gui.plug_iter)
+	except:
+	    return
 		
     def create_plug(self):
-		print "creating new plugin..."
-		plug = open(os.path.join(self.main_dist_path,'addons/custom/new.sh'), "w")
-		plug.write ('''#!/bin/bash
+	print "creating new plugin..."
+	plug = open(os.path.join(self.main_dist_path,'addons/custom/new.sh'), "w")
+	plug.write ('''#!/bin/bash
 ###########
 #
 # Note:
@@ -178,20 +178,31 @@ DESCRIPTION=""
 
 
 ''')
-		plug.close()
-		self.optwin.hide()
-		nfile = os.path.join(self.main_dist_path,'addons/custom/new.sh')
-		try:
-			(pid,t,r,s) = gobject.spawn_async(['/usr/bin/xdg-open', nfile],flags=gobject.SPAWN_DO_NOT_REAP_CHILD,standard_output = True, standard_error = True)
-		except:
-			return
-		data=(nfile)
-		gobject.child_watch_add(pid, self.task_done,data)
+	plug.close()
+	self.optwin.hide()
+	nfile = os.path.join(self.main_dist_path,'addons/custom/new.sh')
+	try:
+	    (pid,t,r,s) = gobject.spawn_async(['/usr/bin/xdg-open', nfile],flags=gobject.SPAWN_DO_NOT_REAP_CHILD,standard_output = True, standard_error = True)
+	except:
+	    return
+	data=(nfile)
+	gobject.child_watch_add(pid, self.task_done,data)
 		
     def task_done(self,pid,ret,data):
-		self.options_dialog()
+	self.options_dialog()
 		
     def edit_plug(self):
-		print "edit the plugin %s " % self.gui.selected_plug_path
-		os.system('xdg-open %s' % self.gui.selected_plug_path)
+	print "edit the plugin %s " % self.gui.selected_plug_path
+	os.system('xdg-open %s' % self.gui.selected_plug_path)
+		
+    def start_multiboot(self):
+	self.mboot_script = os.path.join(scripts_path,'multiboot.sh')
+	#drawarea_xid=self.gui.drawarea.get_property('window').xid
+	#print "draw id: %s" % drawarea_xid
+        self.gui.vt.run_command('gksu /bin/bash %s %s' % (self.mboot_script,
+						       self.username))
+	#winid=os.popen("xwininfo -name MultiSystem | grep 'Window id' | awk '{print $4}'").read().strip()
+	#print "MultiSystem window id : %s" % winid
+	
+	
                                 
