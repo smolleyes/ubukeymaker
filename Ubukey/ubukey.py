@@ -114,7 +114,8 @@ class Ubukey_gui(object):
                "on_edit_plug_btn_clicked" : self.edit_plug,
                "on_del_plug_btn_clicked" : self.delete_plug,
                "on_refresh_plug_btn_clicked" : self.options_dialog,
-               "on_multiboot_btn_clicked" : self.start_multiboot
+               "on_multiboot_btn_clicked" : self.start_multiboot,
+               "on_sourceFolder_btn_clicked" : self.open_source_folder
                }
         
         self.gladexml.signal_autoconnect(dic)
@@ -234,6 +235,9 @@ class Ubukey_gui(object):
         
     def start_multiboot(self,widget):
         self.distribs.start_multiboot()
+        
+    def open_source_folder(self,widget):
+        self.distribs.open_source_folder()
         
     def exit(self,window=None,event=None):
         os.system("kill -9 `ps aux | grep bash | grep ubukey | grep .sh | awk '{print $2}' |xargs`")

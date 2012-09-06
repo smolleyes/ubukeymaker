@@ -204,5 +204,9 @@ DESCRIPTION=""
 	#winid=os.popen("xwininfo -name MultiSystem | grep 'Window id' | awk '{print $4}'").read().strip()
 	#print "MultiSystem window id : %s" % winid
 	
+    def open_source_folder(self):
+	print "Opening folder %s" % self.gui.selected_dist_path
+	os.system("xdg-open %s" % self.gui.selected_dist_path)
+	
 	
                                 
