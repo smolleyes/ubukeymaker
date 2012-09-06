@@ -292,6 +292,22 @@ done
 # clean cache apt
 rm -R "${DISTDIR}"/chroot/var/lib/apt/lists/*
 
+## default session to boot
+rm /tmp/zenity
+echo -e 'zenity --list --checklist --width 650 --height 500 --title "Choix de la session par defaut" --column "choix" --column "Session" --text "choisissez la session a demarrer par defaut sur votre live-cd/usb" \\'  | tee /tmp/zenity &>/dev/null
+echo -e "FALSE \"xterm\" \\" | tee -a /tmp/zenity &>/dev/null
+for i in `ls "${DISTDIR}"/chroot/usr/share/xsessions | grep ".desktop" | sed -e 's/.desktop//'`; do
+	echo -e "FALSE \"$i\" \\" | tee -a /tmp/zenity &>/dev/null
+done
+chmod +x /tmp/zenity
+MENU=$(/tmp/zenity)
+res="`echo $MENU | sed 's/|/ /g' | awk '{print $1}'`"
+if [ -n "$res" ]; then
+	chroot "${DISTDIR}/chroot" /usr/lib/lightdm/lightdm-set-defaults -s "$res"
+	echo -e "Session $res activee par defaut ...\n"
+fi
+
+
 echo -e "regenere le fichier squashfs \n"
 umount -l -f "${DISTDIR}"/chroot/media/pc-local/media &>/dev/null
 umount -l -f "${DISTDIR}"/chroot/media/pc-local/home &>/dev/null
