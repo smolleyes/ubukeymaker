@@ -514,7 +514,7 @@ fi
 message "Reverifie l integritee du dossier /etc/skel (peut etre long...) \n"
 chuser=$(cat /etc/casper.conf | grep -w "USERNAME=" | sed 's/.*=//' | sed 's/"//g')
 if [[ "$USER" != "$chuser" ]]; then
-LISTE="`find /etc/skel/ -type f | sed '/.thumbnails/d;/.cache/d;/.purple/d;/.icons/d;/.emerald/d;/.mozilla/d;/.dbus/d;/.themes/d;/.png/d;/.jpeg/d;/.jpg/d;/.bin/d;/find/d'`"
+LISTE="`find /etc/skel/ -type f | sed '/.thumbnails/d;/.purple/d;/.icons/d;/.emerald/d;/.mozilla/d;/.dbus/d;/.themes/d;/.png/d;/.jpeg/d;/.jpg/d;/.bin/d;/find/d'`"
 echo -e "$LISTE" | while read file; do 
 
 if [[ -e "$file" && `cat "$file" | grep -e "$chuser"` ]]; then 
@@ -554,6 +554,16 @@ if [[ ! -e /sbin/initctl && -e /sbin/initctl.distrib ]]; then
 ln -s /sbin/initctl.distrib /sbin/initctl
 fi
 
+## restore dconf
+mkdir /home/$USER/.config/dconf
+if [ -e "/opt/save_dconf" ]; then
+message "restoring dconf values...\n"
+if [[ "$USER" != "$chuser" ]]; then
+sed -i "s%=$chuser%=$USER%g;s%\/home\/$chuser%\/home\/$USER%g" /opt/save_dconf
+fi
+sudo -u $USER dconf load / < /opt/save_dconf
+fi
+
 ## disable screen lock
 sudo -u "$USER" dconf write /org/gnome/desktop/lockdown/disable-lock-screen true
 
@@ -584,6 +594,19 @@ xterm -title "Close this window to exit your session" -display :5 -e startchroot
 function CLEANCHROOT()
 {
 message "Sortie du chroot ok, Nettoyage\n"
+
+## enable screen lock
+sudo -u "$USER" dconf write /org/gnome/desktop/lockdown/disable-lock-screen false
+
+## save dconf
+if [ -e "/home/$USER/.config/dconf/user" ]; then
+message "export and save dconf values...\n"
+rm /opt/save_dconf
+sudo -u $USER dconf dump / > /opt/save_dconf
+if [[ "$USER" != "$chuser" ]]; then
+sed -i "s%=$USER%=$chuser%g;s%\/home\/$USER%\/home\/$chuser%g" /opt/save_dconf
+fi
+fi
 
 if [ ! -e "/usr/bin/X" ]; then
 apt-get -y --force-yes install xserver-xorg
@@ -618,9 +641,10 @@ fi ## fin si kde4
 message "Reverifie l integritee du dossier /etc/skel (peut etre long...) \n"
 chuser=$(cat /etc/casper.conf | grep -w "USERNAME=" | sed 's/.*=//' | sed 's/"//g')
 if [[ "$chuser" != "$USER" ]]; then
-LISTE="`find /etc/skel -type f | sed '/.thumbnails/d;/.cache/d;/.purple/d;/.icons/d;/.emerald/d;/.mozilla/d;/.dbus/d;/.themes/d;/.png/d;/.jpeg/d;/.jpg/d;/.bin/d;/find/d'`"
+LISTE="`find /etc/skel -type f | sed '/.thumbnails/d;/.purple/d;/.icons/d;/.emerald/d;/.mozilla/d;/.dbus/d;/.themes/d;/.png/d;/.jpeg/d;/.jpg/d;/.bin/d;/find/d'`"
 echo -e "$LISTE" | while read file; do 
-if [[ -e "$file" && `cat "$file" | grep -e "$USER"` ]]; then 
+if [[ -e "$file" && `cat "$file" | grep -e "$USER"` ]]; then
+message "corrige l utilisateur dans le fichier: "$file""
 sed -i "s%=$USER%=$chuser%g;s%\/home\/$USER%\/home\/$chuser%g" "$file"
 fi
 done
@@ -637,6 +661,7 @@ done
 if [ -e "/etc/skel/.gconfd/saved_state" ]; then
 rm /etc/skel/.gconfd/saved_state
 fi
+
 
 ## remet user root
 #sed -i 's/\/home\/.*:/\/root:/' chroot/etc/passwd
@@ -830,6 +855,8 @@ mode=""
 kill -9 `lsof -atw "${DISTDIR}"/chroot | xargs ` &>/dev/null
 
 echo -e "Nettoyage final de la distribution..."
+chuser=$(cat "${DISTDIR}"/chroot/etc/casper.conf | grep -w "USERNAME=" | sed 's/.*=//' | sed 's/"//g') &>/dev/null
+sed -i 's/# export FLAVOUR="ubuntu"/FLAVOUR="'$chuser'"/' "${DISTDIR}"/chroot/etc/casper.conf
 chroot "${DISTDIR}"/chroot deluser "$USER" &>/dev/null
 ## remet bien le /root dans passwd...
 #sed -i 's/\/home\/'$USER'/\/root/' "${DISTDIR}"/chroot/etc/passwd
@@ -843,6 +870,26 @@ sleep 5
 sed -i 's/\/home\/'$USER'/\/root/' "${DISTDIR}"/chroot/etc/passwd
 fi
 
+echo -e "Synchronise themes icons et extensions"
+## sync themes icons ans extensions
+rsync -uravH --exclude "~" "${DISTDIR}"/chroot/etc/skel/.themes/. "${DISTDIR}"/chroot/usr/share/themes/. 2>/dev/null
+chown -R root:root "${DISTDIR}"/chroot/usr/share/themes/* &>/dev/null
+rm -R "${DISTDIR}"/chroot/etc/skel/.themes/* &>/dev/null
+
+rsync -uravH --exclude "~" "${DISTDIR}"/chroot/etc/skel/.icons/. "${DISTDIR}"/chroot/usr/share/icons/. 2>/dev/null
+chown -R root:root "${DISTDIR}"/chroot/usr/share/icons/* &>/dev/null
+rm -R "${DISTDIR}"/chroot/etc/skel/.icons/* &>/dev/null
+
+mkdir -p /usr/share/gnome-shell/extensions
+rsync -uravH --exclude "~" "${DISTDIR}"/chroot/etc/skel/.local/share/gnome-shell/extensions/. "${DISTDIR}"/chroot/usr/share/gnome-shell/extensions/. 2>/dev/null
+chown -R root:root "${DISTDIR}"/chroot/usr/share/gnome-shell/extensions/* &>/dev/null
+rm -R "${DISTDIR}"/chroot/etc/skel/.local/share/gnome-shell/extensions/* &>/dev/null
+chmod 777 -R "${DISTDIR}"/chroot/usr/share/gnome-shell/extensions/*
+
+## gschemas override
+cp -f "${DISTDIR}"/chroot/opt/save_dconf "${DISTDIR}"/chroot/usr/share/glib-2.0/schemas/x_custom_dconf.gschema.override
+sed -i '/\[org.*\]/s:/:.:g' "${DISTDIR}"/chroot/usr/share/glib-2.0/schemas/x_custom_dconf.gschema.override
+chroot "${DISTDIR}"/chroot glib-compile-schemas /usr/share/glib-2.0/schemas/
 
 ## nettoie et re verifie fichiers de conf
 rm -f ${DISTDIR}/chroot/etc/skel/*/{ubukey-assist,quit-chroot,gc}.desktop  &>/dev/null
