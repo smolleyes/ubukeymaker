@@ -125,7 +125,7 @@ echo "keyLayout=$keylayout" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &
 echo "localsimple=$LOCALSIMPLE" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 echo "localbase=$LOCALBASE" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 echo "localutf=$LOCALUTF" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
-echo "mode=safe" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
+echo "mode=graphique" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 cp /etc/hosts "${DISTDIR}"/chroot/etc/ -f
 
 ## choix session chroot
@@ -435,7 +435,7 @@ message "Dossier bureau : $deskdir \n"
 
 ## adapte dossier Desktop, casper-bottom
 if [ "$deskdir" != "Desktop" ]; then
-sed -i 's/Desktop/'$deskdir'/g' /usr/share/initramfs-tools/scripts/casper-bottom/10adduser
+sed -i 's/Desktop/'$deskdir'/g' /usr/share/initramfs-tools/scripts/casper-bottom/25adduser
 fi
 
 ## share dir
@@ -459,21 +459,6 @@ X-GNOME-Autostart-enabled=true
 Icon=/usr/share/pixmaps/usbkey.png" | tee /etc/skel/"$deskdir"/ubukey-assist.desktop &>/dev/null
 
 chmod +x /etc/skel/"$deskdir"/ubukey-assist.desktop
-
-#echo "[Desktop Entry]
-#Type=Application
-#Encoding=UTF-8
-#Version=1.0
-#Name=fix-clavier
-#Name[fr_FR]=fix-clavier
-#Comment[fr_FR]=fix-clavier
-#Comment=fix-clavier
-#Exec=setxkbmap $LOCALSIMPLE
-#X-GNOME-Autostart-enabled=true" | tee /etc/xdg/autostart/fix-clavier.desktop &>/dev/null
-
-## icone partage
-#cp -f $UBUKEYDIR/launchers/gc.desktop /etc/skel/"$deskdir"
-#chmod +x /etc/skel/"$deskdir"/gc.desktop
 
 fi ## fin si console debootstrap
 
@@ -801,8 +786,6 @@ message "nettoyage des fichiers de l utilisateur temporaire du chroot\n"
 ## efface utilisateur
 rm -R /home/"$USER"/.dbus
 rm /home/"$USER"/"$deskdir"/Shared_Folder
-rm /etc/xdg/autostart/fix-clavier.desktop &>/dev/null
-rm /etc/skel/.config/autostart/fix-clavier.desktop &>/dev/null
 rm /etc/skel/.xsession-errors &>/dev/null
 rm /etc/skel/.Xauthority &>/dev/null
 rm -Rf /etc/skel/.gvfs &>/dev/null
@@ -823,7 +806,7 @@ rm -R -f /root/* &>/dev/null
 rm -R -f /*.old &>/dev/null
 
 ## more info for damn adduser under live-session
-sed -i 's/user-setup-apply > \/dev\/null/user-setup-apply/' /usr/share/initramfs-tools/scripts/casper-bottom/10adduser &>/dev/null
+sed -i 's/user-setup-apply > \/dev\/null/user-setup-apply/' /usr/share/initramfs-tools/scripts/casper-bottom/25adduser &>/dev/null
 rm /var/lib/dbus/machine-id
 rm /sbin/initctl
 dpkg-divert --rename --remove /sbin/initctl

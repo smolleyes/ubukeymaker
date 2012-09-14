@@ -709,7 +709,7 @@ sed -i 's/quiet/union=aufs quiet/g' "${DISTDIR}"/cdrom/isolinux/isolinux.cfg
 	echo ""
 	echo -e "Creation de l iso avec mkisofs ... \n" 
 	sleep 3
-	sudo mkisofs -r -V "$DIST" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o "$DIST".iso cdrom
+	mkisofs -r -V "$DIST" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o "$DIST".iso cdrom
 	
 	echo -e "Regenere le md5 public de votre iso \n"
 	md5sum "$DIST".iso | tee MD5SUM
