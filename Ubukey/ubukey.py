@@ -21,7 +21,7 @@ from lib.functions import get_dist_env
 class Ubukey_gui(object):
     def __init__(self):
         if os.getuid() == 0:
-            self.error_dialog("Ubukey can't start as root user ...",None)
+            self.error_dialog(_("Ubukey can't start as root user ..."),None)
             exit()
         ## set the gladexml file
         self.gladexml = gtk.glade.XML(GLADE_FILE, None ,APP_NAME)
@@ -129,7 +129,7 @@ class Ubukey_gui(object):
             if (width > 1900):
                 width = 1920
                 height = 1080
-            print "Xephyr's screen size : %s" % res
+            print _("Xephyr's screen size : %s") % res
         else:
             width = 1280
             height = 1024
@@ -147,6 +147,8 @@ class Ubukey_gui(object):
         self.load_distribs_xml()
         self.start_Xephyr()
         self.startVt()
+        ## create system config file
+        self.vt.run_command('gksu /bin/bash ' + data_path +'/scripts/include.sh')
         gtk.main()
 
     def error_dialog(self,message, parent = None):

@@ -543,7 +543,7 @@
                                                           <widget class="GtkLabel" id="label11">
                                                             <property name="visible">True</property>
                                                             <property name="can_focus">False</property>
-                                                            <property name="label" translatable="yes">Ouvrir dossier source</property>
+                                                            <property name="label" translatable="yes">Open source folder</property>
                                                           </widget>
                                                           <packing>
                                                             <property name="expand">True</property>
@@ -848,14 +848,14 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <widget class="GtkButton" id="refresh_plug_btn">
-                            <property name="label">gtk-refresh</property>
+                          <widget class="GtkButton" id="del_plug_btn">
+                            <property name="label">gtk-clear</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
                             <property name="use_stock">True</property>
-                            <signal name="clicked" handler="on_refresh_plug_btn_clicked" swapped="no"/>
+                            <signal name="clicked" handler="on_del_plug_btn_clicked" swapped="no"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -865,14 +865,14 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkButton" id="del_plug_btn">
-                            <property name="label">gtk-clear</property>
+                          <widget class="GtkButton" id="refresh_plug_btn">
+                            <property name="label">gtk-refresh</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
                             <property name="use_stock">True</property>
-                            <signal name="clicked" handler="on_del_plug_btn_clicked" swapped="no"/>
+                            <signal name="clicked" handler="on_refresh_plug_btn_clicked" swapped="no"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>

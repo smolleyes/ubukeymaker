@@ -1,3 +1,4 @@
+source /etc/ubukey/config
 
 rm /tmp/usbscan &>/dev/null
 rm /tmp/hallist &>/dev/null

@@ -3,9 +3,7 @@
 DIST=$1
 DISTDIR=$2
 
-if [[ "`uname -m`" = "x86_64" ]]; then
-	x64="true"
-fi
+source /etc/ubukey/config
 
 preseed=$(ls "${DISTDIR}"/usb/preseed | grep "ubu")
 LOCALANG=$(env | grep LANG | sed -e 's/.*=//' -e 's/_.*//' -e 's/.utf8/.UTF-8/g' | uniq)

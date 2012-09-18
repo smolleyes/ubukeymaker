@@ -1,5 +1,5 @@
 #!/bin/bash
-		
+
 sudo rm /tmp/list &>/dev/null
 touch /tmp/list
 

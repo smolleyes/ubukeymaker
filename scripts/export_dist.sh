@@ -2,19 +2,8 @@
 
 DIST=$1
 DISTDIR=$2
-CURDIST=`lsb_release -cs`
 
-if [[ "`uname -m`" == "x86_64" ]]; then
-	X64="true"
-fi
-
-if [ -e "/usr/share/ubukey" ]; then 
-UBUKEYDIR="/usr/share/ubukey"
-elif [ -e "/usr/local/share/ubukey" ]; then
-UBUKEYDIR="/usr/local/share/ubukey"
-else
-UBUKEYDIR="$(pwd)/.."
-fi
+source /etc/ubukey/config
 
 #############################
 ## Copies des fichiers necessaires sur la cle

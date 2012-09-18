@@ -53,7 +53,7 @@ def run_cmd(command):
         ret = Popen(command,shell=True, 
                     stdout=subprocess.PIPE).communicate()[0].strip()
     except:
-        print "cmd %s failed : " % command
+        print _("cmd %s failed : ") % command
         return
     return ret
 

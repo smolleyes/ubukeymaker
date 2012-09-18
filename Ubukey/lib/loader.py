@@ -12,7 +12,7 @@ def checkConf():
         path = FirstRun()
         if path and path_exist(path):
             os.makedirs(conf_path, 0755)
-            print "selected path : %s" % path
+            print _("selected path : %s") % path
             listdir = ("distribs","isos","temp","addons/precise",
                        "addons/precise/gnome","addons/precise/kde4",
                        "addons/precise/xfce4","addons/precise/lxde",
@@ -32,7 +32,7 @@ def checkConf():
             path = FirstRun()
             return generate_config(path)
         if not os.access(main_dist_path, os.R_OK):
-            error_dialog("Votre dossier de distributions :\n%s \nn'est pas accessible, pas monte ou supprime (recreez le)..." % main_dist_path)
+            error_dialog(_("Your distrubution's folder :\n%s \nis not accessible, unmounted or removed (recreate it)...") % main_dist_path)
             sys.exit()
         if not os.path.exists(os.path.join(main_dist_path,'addons/custom')):
 			os.mkdir(os.path.join(main_dist_path,'addons/custom'))
@@ -58,7 +58,7 @@ def generate_config(path):
         
 def FirstRun():
     ## select a dir for the distributions
-    dialog = create_folderchooser_open('Select a folder for your distributions')
+    dialog = create_folderchooser_open(_('Select a folder for your distributions'))
     result = dialog.run()
     if result != gtk.RESPONSE_OK:
         dialog.destroy()
@@ -72,7 +72,7 @@ def FirstRun():
     path_part = os.popen("df '%s' | grep /dev | awk '{print $1}'" % path, 'r').read().strip()
     path_check = os.popen("mount | grep '%s' | grep -E '(ntfs|vfat|nosuid|noexec|nodev)'" % path_part, 'r').read().strip()
     if (path_check != ''):
-        print "Please select another folder (no ntfs/fat partitions or partitions mounted with nosuid/nodev/noexec options or root protected...please correct fstab or choose another partition!)"
+        print _("Please select another folder (no ntfs/fat partitions or partitions mounted with nosuid/nodev/noexec options or root protected...please correct fstab or choose another partition!)")
         return FirstRun()
     ## ok return the path
     return path

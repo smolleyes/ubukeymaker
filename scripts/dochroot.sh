@@ -2,23 +2,11 @@
 
 DISTDIR=$1
 USER=$2
-CURDIST=`lsb_release -cs`
 
-if [ -e "/usr/share/ubukey" ]; then 
-UBUKEYDIR="/usr/share/ubukey"
-elif [ -e "/usr/local/share/ubukey" ]; then
-UBUKEYDIR="/usr/local/share/ubukey"
-else
-UBUKEYDIR="$(pwd)/.."
-fi
-
-if [[ "`uname -m`" == "x86_64" ]]; then
-	X64="true"
-fi
+source /etc/ubukey/config
 
 function prepareChroot()
 {
-echo "${DISTDIR}"/chroot/etc/lsb-release
 CHROOTVER=$(cat "${DISTDIR}"/chroot/etc/lsb-release | awk -F= '/CODENAME/ {print $2}')
 
 ### return if not the same distro...
@@ -34,7 +22,7 @@ CHROOTVER=$(cat "${DISTDIR}"/chroot/etc/lsb-release | awk -F= '/CODENAME/ {print
 #exit 1
 #fi
 
-echo -e "Préparation du chroot, merci de patienter... \n"
+echo -e "$(eval_gettext 'Preparing chroot, please wait...') \n"
 
 ## synchronise fichiers locaux et distribs
 if [ ! -e "${DISTDIR}"/chroot/usr/share/ubukey ]; then
@@ -42,11 +30,11 @@ mkdir "${DISTDIR}"/chroot/usr/share/ubukey
 fi
 
 if [  -n "$UBUKEYDIR" ]; then
-rsync -uravH --delete --exclude ".git" --exclude "~" "$UBUKEYDIR"/. "${DISTDIR}"/chroot/usr/share/ubukey/.
+rsync -uravH --delete --exclude ".git" --exclude "~" "$UBUKEYDIR"/. "${DISTDIR}"/chroot/usr/share/ubukey/. &>/dev/null
 if [ ! -e "${DISTDIR}"/chroot/usr/share/ubukey/addons/custom ]; then
 mkdir -p "${DISTDIR}"/chroot/usr/share/ubukey/addons/custom
 fi
-rsync -uravH --delete --exclude ".git" --exclude "~" "$(dirname $DISTDIR)"/../addons/custom/. "${DISTDIR}"/chroot/usr/share/ubukey/addons/custom/.
+rsync -uravH --delete --exclude ".git" --exclude "~" "$(dirname $DISTDIR)"/../addons/custom/. "${DISTDIR}"/chroot/usr/share/ubukey/addons/custom/. &>/dev/null
 chmod +x "${DISTDIR}"/chroot/usr/share/ubukey/scripts/*
 fi
 
@@ -72,40 +60,6 @@ cp -f "${DISTDIR}"/config "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf ## config ge
 apt-get clean &>/dev/null
 ## nettoie fichiers desinstalles mais pas la conf donc toujours apparents
 dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null 
-## verifies ppa etc
-if [[ `apt-get update 2>&1 | tee /tmp/t &>/dev/null && cat /tmp/t | grep "ppa.launchpad.net.*NO_PUBKEY"` ]]; then
-# Simple script to check for all PPAs refernced in your apt sources and
-# to grab any signing keys you are missing from keyserver.ubuntu.com.
-# Additionally copes with users on launchpad with multiple PPAs
-# (e.g., ~asac)
-#
-# Author: Dominic Evans https://launchpad.net/~oldman
-# License: LGPL v2
-
-for APT in `find /etc/apt/ -name *.list`; do
-    grep -o "^deb http://ppa.launchpad.net/[a-z0-9\-]\+/[a-z0-9\-]\+" $APT | while read ENTRY ; do
-        # work out the referenced user and their ppa
-        USER=`echo $ENTRY | cut -d/ -f4`
-        PPA=`echo $ENTRY | cut -d/ -f5`
-        # some legacy PPAs say 'ubuntu' when they really mean 'ppa', fix that up
-        if [ "ubuntu" = "$PPA" ]
-        then
-            PPA=ppa
-        fi
-        # scrape the ppa page to get the keyid
-        KEYID=`wget -q --no-check-certificate https://launchpad.net/~$USER/+archive/$PPA -O- | grep -o "1024R/[A-Z0-9]\+" | cut -d/ -f2`
-        sudo apt-key adv --list-keys $KEYID >/dev/null 2>&1
-        if [ $? != 0 ]
-        then
-            echo "Grabbing key $KEYID for archive $PPA by ~$USER"
-            sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com $KEYID
-        else
-            echo "Already have key $KEYID for archive $PPA by ~$USER"
-        fi
-    done
-done
-########################################################################
-fi
 
 ## copie fichiers sources et cle gpg locales
 rm "${DISTDIR}"/chroot/etc/ubukey/sources/sources.list.d/private-ppa* &>/dev/null
@@ -130,7 +84,7 @@ cp /etc/hosts "${DISTDIR}"/chroot/etc/ -f
 
 ## choix session chroot
 rm /tmp/zenity
-echo -e 'zenity --list --checklist --width 650 --height 500 --title "Choix de la session" --column "choix" --column "Session" --text "choisissez la session a demarrer" \\'  | tee /tmp/zenity &>/dev/null
+echo -e "zenity --list --checklist --width 650 --height 500 --title \"$(eval_gettext 'Session choice')\" --column \"$(eval_gettext 'Choice')\" --column \"$(eval_gettext 'Session')\" --text \"$(eval_gettext 'Choose the session to start')\" \\"  | tee /tmp/zenity &>/dev/null
 echo -e "FALSE \"xterm\" \\" | tee -a /tmp/zenity &>/dev/null
 for i in `ls "${DISTDIR}"/chroot/usr/share/xsessions | grep ".desktop" | sed -e 's/.desktop//'`; do
 	echo -e "FALSE \"$i\" \\" | tee -a /tmp/zenity &>/dev/null
@@ -158,8 +112,7 @@ elif [[ `ps aux | grep -e "[x]fsettingsd"` ]]; then
 elif [[ `ps aux | grep -e "[l]xsession"` ]]; then
 	localSession="lxde"
 else
-	echo -e "Type de session locale non détéctée, ou non supportée vous utilisez e17, fluxbox ???... 
-aucun thème ne sera copié"
+	echo -e "$(eval_gettext 'Local session type not detected, or not supported (fluxbox....), themes copy canceled')"
 fi
 echo "session_starter=$starter" | tee -a "${DISTDIR}"/chroot/etc/ubukey/ubukeyconf &>/dev/null
 
@@ -172,14 +125,14 @@ fi
 if [ -z "$console" ]; then
 	## assistant pre chroot inclus (copie des themes si session locale est la meme que la session a preparer)
 	if [[ "$sessionType" != "$localSession" ]]; then
-	echo -e "Vous utilisez \"$localSession\" actuellement et vous préparez une session \"$sessionType\" 
-, copie des thèmes annulée... \n"
+	echo -e "$(eval_gettext 'You re running a \"$localSession\" actually but preparing a \"$sessionType\" 
+session, themes copy canceled...') \n"
 
 	elif [[ "$sessionType" = "kde4" && ! -e "${DISTDIR}"/chroot/etc/skel/.kde ]]; then
-	zenity --info --text "Première execution du chroot, la copie des thèmes, des icones etc 
-ne sera proposée qu'au prochain démarrage du chroot (pas encore de .kde...)
+	zenity --info --text "$(eval_gettext 'First chroot execution, the themes, icons etc 
+will be proposed at the next startup of the chroot (no .kde yet...)
 
-Cliquez \"Valider\" pour continuer
+click on \"Yes\" to continue')
 "
 	else
 		. $UBUKEYDIR/scripts/themescan.sh
@@ -230,7 +183,7 @@ if [ ! -e "${WORK}/addons" ]; then
 fi
 cp -R -f $UBUKEYDIR/addons/{all,$CURDIST,custom} "${WORK}"/addons/ &>/dev/null
 
-echo -e "Copie les addons du script et vos addons perso pour votre distrib $sessionType \n"
+echo -e "$(eval_gettext 'Copy ubukey and custom addons for your $sessionType session') \n"
 
 mkdir "${DISTDIR}"/chroot/usr/local/bin/ubukey-addons &>/dev/null
 cp -f "${WORK}"/addons/$CHROOTVER/"$sessionType"/* "${DISTDIR}"/chroot/usr/local/bin/ubukey-addons &>/dev/null
@@ -313,7 +266,7 @@ umount -f /lib/modules/*/volatile &>/dev/null
 
 
 ## check sources
-message "Verification des sources, merci de patienter"
+message "$(eval_gettext 'Verifying packages sources, please wait...')"
 #/bin/bash $UBUKEYDIR/scripts/themescan.sh
 
 ## Changement de la langue par defaut des consoles tty avec : $LOCALSIMPLE
@@ -546,6 +499,7 @@ message "restoring dconf values...\n"
 if [[ "$USER" != "$chuser" ]]; then
 sed -i "s%=$chuser%=$USER%g;s%\/home\/$chuser%\/home\/$USER%g" /opt/save_dconf
 fi
+mv /opt/save_dconf_raw /home/$USER/.config/dconf/user
 sudo -u $USER dconf load / < /opt/save_dconf
 fi
 
@@ -591,6 +545,7 @@ sudo -u $USER dconf dump / > /opt/save_dconf
 if [[ "$USER" != "$chuser" ]]; then
 sed -i "s%=$USER%=$chuser%g;s%\/home\/$USER%\/home\/$chuser%g" /opt/save_dconf
 fi
+mv /home/$USER/.config/dconf/user /opt/save_dconf_raw
 fi
 
 if [ ! -e "/usr/bin/X" ]; then

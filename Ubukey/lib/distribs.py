@@ -24,13 +24,13 @@ class Distribs(object):
         crun = os.popen("ps aux | grep '/bin/bash' | grep -e "+scripts_path+'/dochroot'" | grep -v 'grep'").read().strip()
         xrun = os.popen("ps aux | grep '/bin/bash' | grep -e "+scripts_path+'/startchroot'" | grep -v 'grep'").read().strip()
         if not crun == '' or not xrun == '':
-            print "a session is already running"
+            print _("a session is already running")
             return
         
-        self.gui.run_btn_label.set_text("Stop")
+        self.gui.run_btn_label.set_text(_("Stop"))
         self.gui.run_btn_img.set_from_stock(gtk.STOCK_STOP,gtk.ICON_SIZE_BUTTON)
         self.gui.run_btn_state = "started"
-        self.gui.vt.log("distro started")
+        self.gui.vt.log(_("distribution started"))
 	#self.gui.notebook.set_current_page(1)
         self.gui.vt.run_command('gksu /bin/bash %s %s %s' % (self.chroot_script, self.gui.selected_dist_path, self.username))
         self.pid = os.popen("ps aux | grep -e 'dochroot' | grep -v 'grep'").read().strip()
@@ -49,20 +49,20 @@ class Distribs(object):
             r = os.system("gksu 'kill -9 %s'" % t)
             if not r == 256:
                 return
-        self.gui.run_btn_label.set_text("Start")
+        self.gui.run_btn_label.set_text(_("Start"))
         self.gui.run_btn_img.set_from_stock(gtk.STOCK_MEDIA_PLAY,gtk.ICON_SIZE_BUTTON)
         self.gui.run_btn_state = "stopped"
-        self.gui.vt.log("distro stopped")
+        self.gui.vt.log(_("distribution stopped"))
 	self.gui.notebook.set_current_page(0)
     
     def update_list(self):
         self.main_dist_path,dist_list = scan_dist_path()
-        print "updating distrib list..."
+        print _("updating distribution list...")
         self.parser = Parser(self.ini)
         for dir in dist_list:
             dist_conf = os.path.join(dir,'config')
             if not os.path.exists(dist_conf):
-                print "no config file found : %s" % dist_conf
+                print _("no configuration file found : %s") % dist_conf
                 continue
             dist_name = os.path.basename(dir)
             if not self.parser.has_section(dist_name):
@@ -97,7 +97,7 @@ class Distribs(object):
         self.update_list()
         
     def remove_dist(self):
-        quest = yesno("remove a distribution", "Remove your distribution %s installed in :\n%s  ?" % (self.gui.selected_dist,self.gui.selected_dist_path))
+        quest = yesno(_("remove a distribution"), _("Remove your distribution %s installed in :\n%s  ?") % (self.gui.selected_dist,self.gui.selected_dist_path))
         if quest == "No":
             return
         self.remove_script = os.path.join(scripts_path,'remove_dist.sh')
@@ -148,14 +148,14 @@ class Distribs(object):
 			
     def delete_plug(self):
 	try:
-	    print "removing the plugin %s " % self.gui.selected_plug_path
+	    print _("removing the plugin %s ") % self.gui.selected_plug_path
 	    os.remove(self.gui.selected_plug_path)
 	    self.gui.plugins_model.remove(self.gui.plug_iter)
 	except:
 	    return
 		
     def create_plug(self):
-	print "creating new plugin..."
+	print _("creating new plugin...")
 	plug = open(os.path.join(self.main_dist_path,'addons/custom/new.sh'), "w")
 	plug.write ('''#!/bin/bash
 ###########
@@ -192,7 +192,7 @@ DESCRIPTION=""
 	self.options_dialog()
 		
     def edit_plug(self):
-	print "edit the plugin %s " % self.gui.selected_plug_path
+	print _("edit the plugin %s ") % self.gui.selected_plug_path
 	os.system('xdg-open %s' % self.gui.selected_plug_path)
 		
     def start_multiboot(self):
@@ -205,7 +205,7 @@ DESCRIPTION=""
 	#print "MultiSystem window id : %s" % winid
 	
     def open_source_folder(self):
-	print "Opening folder %s" % self.gui.selected_dist_path
+	print _("Opening folder %s") % self.gui.selected_dist_path
 	os.system("xdg-open %s" % self.gui.selected_dist_path)
 	
 	

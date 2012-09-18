@@ -1,13 +1,5 @@
-if [ -e "/usr/share/ubukey" ]; then 
-UBUKEYDIR="/usr/share/ubukey"
-elif [ -e "/usr/local/share/ubukey" ]; then
-UBUKEYDIR="/usr/local/share/ubukey"
-else
-UBUKEYDIR="$(pwd)/.."
-fi
+source /etc/ubukey/config
 
-
-DIST=`lsb_release -cs`
 rm /tmp/pack &>/dev/null
 
 function install_packages()

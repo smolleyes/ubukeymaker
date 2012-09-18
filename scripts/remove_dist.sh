@@ -4,6 +4,8 @@ DIST=$1
 DISTDIR=$2
 USER=$3
 
+source /etc/ubukey/config
+
 echo -e "suppression de la distribution $DIST installee dans ${DISTDIR} \n"
 if [ -e "$DISTDIR" ]; then
 	if [[ `mount | grep ${DISTDIR}/chroot` ]]; then

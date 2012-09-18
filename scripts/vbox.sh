@@ -3,15 +3,7 @@
 DIST=$1
 DISTDIR=$2
 installType=$3
-CURDIST=`lsb_release -cs`
-
-if [ -e "/usr/share/ubukey" ]; then 
-UBUKEYDIR="/usr/share/ubukey"
-elif [ -e "/usr/local/share/ubukey" ]; then
-UBUKEYDIR="/usr/local/share/ubukey"
-else
-UBUKEYDIR="$(pwd)/.."
-fi
+source /etc/ubukey/config
 
 function chooseMedia() 
 {

@@ -1,4 +1,5 @@
 #!/bin/bash
+source /etc/ubukey/config
 
 MENU=''
 rm /tmp/full_list &>/dev/null
