@@ -43,6 +43,8 @@ gnome-session
 metacity
 desktop-base
 gnome-panel
+gnome-themes-standard
+light-themes
 ## for live-cd
 casper
 lupin-casper

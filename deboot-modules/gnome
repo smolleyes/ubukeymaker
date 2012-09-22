@@ -36,6 +36,8 @@ plymouth
 plymouth-label
 plymouth-theme-ubuntu-logo
 plymouth-theme-ubuntu-text
+gnome-themes-standard
+light-themes
 ## for live-cd
 casper
 lupin-casper
