@@ -37,6 +37,9 @@ fi
 if [ "$session" != "" ]; then
 	sed -i "s/distSession=.*/distSession=$session/" "$DISTDIR"/config
 fi
+if [[ "$session" = "gnome-shell" || "$session" = "cinnamon" ]]; then
+	sed -i "s/distSession=.*/distSession=gnome/" "$DISTDIR"/config
+fi
 }
 
 ## menu choix packages
