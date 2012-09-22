@@ -4,6 +4,8 @@ packages="
 # Gnome minimal packages
 ################
 gnome-shell
+gnome-tweak-tool
+gnome-shell-extensions
 
 # display manager
 ################
