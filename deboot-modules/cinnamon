@@ -3,6 +3,7 @@ lang=$(env | grep -w "LANG" | sed -e 's/\..*//;s/LANG=//;s/_.*//')
 packages="
 # Gnome minimal packages
 ################
+gnome-core
 cinnamon
 cinnamon-applet*
 
@@ -37,6 +38,9 @@ plymouth
 plymouth-label
 plymouth-theme-ubuntu-logo
 plymouth-theme-ubuntu-text
+gnome-themes-standard
+light-themes
+gnome-panel
 ## for live-cd
 casper
 lupin-casper
