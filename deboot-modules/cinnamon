@@ -4,7 +4,7 @@ packages="
 # Gnome minimal packages
 ################
 cinnamon
-cinnamon-applets*
+cinnamon-applet*
 
 # display manager
 ################
