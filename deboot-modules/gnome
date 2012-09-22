@@ -30,7 +30,12 @@ policykit-1-gnome
 policykit-desktop-privileges
 udisks
 software-center
+python-software-properties
 wget
+plymouth
+plymouth-label
+plymouth-theme-ubuntu-logo
+plymouth-theme-ubuntu-text
 ## for live-cd
 casper
 lupin-casper

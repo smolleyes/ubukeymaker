@@ -3,7 +3,7 @@ lang=$(env | grep -w "LANG" | sed -e 's/\..*//;s/LANG=//;s/_.*//')
 packages="
 # Gnome minimal packages
 ################
-xfce4
+gnome-shell
 
 # display manager
 ################
@@ -12,7 +12,6 @@ lightdm
 
 # APT
 #############
-aptitude
 synaptic
 
 # BOOT
@@ -33,15 +32,21 @@ python-software-properties
 udisks
 software-center
 wget
-gtk2-engines
-gtk2-engines-pixbuf
 plymouth
 plymouth-label
-plymouth-theme-xubuntu-logo
-plymouth-theme-xubuntu-text
+plymouth-theme-ubuntu-logo
+plymouth-theme-ubuntu-text
 ## for live-cd
 casper
 lupin-casper
+
+# THEME
+############
+ubuntu-wallpapers
+ubuntu-sounds
+light-themes
+gtk2-engines
+gtk2-engines-pixbuf
 
 # DOCS and locales
 ############

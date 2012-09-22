@@ -9,6 +9,12 @@ echo -e "Installation des paquets pour $session \n"
 lang=$(env | grep -w "LANG" | sed -e 's/\..*//;s/LANG=//;s/_.*//')
 . $UBUKEYDIR/deboot-modules/$session
 
+if [ $session = "cinnamon" ]; then
+	chroot "$DISTDIR"/chroot apt-get -y --force-yes install python-software-properties
+	chroot "$DISTDIR"/chroot apt-add-repository -y ppa:gwendal-lebihan-dev/cinnamon-stable
+	chroot "$DISTDIR"/chroot apt-add-repository -y ppa:bimsebasse/cinnamonextras 
+fi 
+
 packageList="$(echo "$packages" | sed -e '/^#/d;s/\"//g' | xargs)"
 echo "checking packages availability..."
 for p in $packageList ;do 
@@ -23,7 +29,7 @@ chroot "$DISTDIR"/chroot apt-get -y --force-yes install --no-install-recommends 
 
 ## extra-packages (install with recommends)
 if [ $session = "gnome" ]; then
-	chroot "$DISTDIR"/chroot apt-get -y --force-yes install indicator-session gnome-media alacarte network-manager gvfs-backends gvfs-bin gvfs-fuse plymouth plymouth-theme-ubuntu-logo plymouth-theme-ubuntu-text
+	chroot "$DISTDIR"/chroot apt-get -y --force-yes install indicator-session gnome-media alacarte network-manager gvfs-backends gvfs-bin gvfs-fuse
 	chroot "$DISTDIR"/chroot apt-get remove -y gwibber ubuntuone*
 fi 
 ##
@@ -43,7 +49,9 @@ avec le serveur x, un kernel et quelques paquets essentiels...(lubuntu = lxde)
 TRUE "gnome" \
 FALSE "kde4" \
 FALSE "xfce4" \
-FALSE "lxde"`
+FALSE "lxde" \
+FALSE "gnome-shell" \
+FALSE "cinnamon"`
 
 case $ACTION in
 	gnome)
@@ -57,6 +65,12 @@ case $ACTION in
 	;;
 	xfce4)
 	install_packages xfce4 | tee /tmp/debootlog
+	;;
+	gnome-shell)
+	install_packages gnome-shell | tee /tmp/debootlog
+	;;
+	cinnamon)
+	install_packages cinnamon | tee /tmp/debootlog
 	;;
 	*)
 	exit 0

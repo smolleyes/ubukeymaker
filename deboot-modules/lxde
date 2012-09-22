@@ -41,11 +41,16 @@ nano
 wireless-tools
 policykit-1-gnome
 policykit-desktop-privileges
+python-software-properties
 udisks
 software-center
 wget
 gtk2-engines
 gtk2-engines-pixbuf
+plymouth
+plymouth-label
+plymouth-theme-lubuntu-logo
+plymouth-theme-lubuntu-text
 ## for live-cd
 casper
 lupin-casper

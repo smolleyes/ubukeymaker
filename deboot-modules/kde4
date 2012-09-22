@@ -33,7 +33,12 @@ wireless-tools
 policykit-kde-1
 policykit-desktop-privileges
 udisks
+python-software-properties
 wget
+plymouth
+plymouth-label
+plymouth-theme-kubuntu-logo
+plymouth-theme-kubuntu-text
 ## for live-cd
 casper
 lupin-casper
