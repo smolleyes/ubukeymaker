@@ -488,7 +488,7 @@ dbus-daemon --system --fork
 ## fix initctl
 dpkg-divert --local --rename --add /sbin/initctl
 ﻿ln -s /bin/true /sbin/initctl
-if [[ ! -e /sbin/initctl && -e /sbin/initctl.distrib ]]; then
+if [[ ! -e "/sbin/initctl" && -e "/sbin/initctl.distrib" ]]; then
 ln -s /sbin/initctl.distrib /sbin/initctl
 fi
 
