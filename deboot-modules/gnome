@@ -36,9 +36,12 @@ plymouth
 plymouth-label
 plymouth-theme-ubuntu-logo
 plymouth-theme-ubuntu-text
+gnome-session
+metacity
+desktop-base
+gnome-panel
 gnome-themes-standard
 light-themes
-gnome-panel
 ## for live-cd
 casper
 lupin-casper

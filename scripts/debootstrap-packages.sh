@@ -6,13 +6,17 @@ function install_packages()
 {
 session=$1
 echo -e "Installation des paquets pour $session \n"
+
+chroot "$DISTDIR"/chroot apt-get -y --force-yes install dialog
+
 lang=$(env | grep -w "LANG" | sed -e 's/\..*//;s/LANG=//;s/_.*//')
 . $UBUKEYDIR/deboot-modules/$session
 
 if [ $session = "cinnamon" ]; then
 	chroot "$DISTDIR"/chroot apt-get -y --force-yes install python-software-properties
 	chroot "$DISTDIR"/chroot apt-add-repository -y ppa:gwendal-lebihan-dev/cinnamon-stable
-	chroot "$DISTDIR"/chroot apt-add-repository -y ppa:bimsebasse/cinnamonextras 
+	chroot "$DISTDIR"/chroot apt-add-repository -y ppa:bimsebasse/cinnamonextras
+	chroot "$DISTDIR"/chroot apt-get update
 fi 
 
 packageList="$(echo "$packages" | sed -e '/^#/d;s/\"//g' | xargs)"
@@ -25,6 +29,7 @@ for p in $packageList ;do
 		echo "The package $p is not available for installation..."
 	fi
 done
+
 chroot "$DISTDIR"/chroot apt-get -y --force-yes install --no-install-recommends `cat /tmp/pack | xargs`
 
 ## extra-packages (install with recommends)
