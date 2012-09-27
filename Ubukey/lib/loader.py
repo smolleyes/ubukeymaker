@@ -57,12 +57,15 @@ def generate_config(path):
 
         
 def FirstRun():
+    if not path_exist('/usr/bin/pkexec'):
+        error_dialog(_('Please install the policykit-1 package'))
+    
     ## select a dir for the distributions
     dialog = create_folderchooser_open(_('Select a folder for your distributions'))
     result = dialog.run()
     if result != gtk.RESPONSE_OK:
         dialog.destroy()
-        return
+    return
     
     path = dialog.get_filename()
     if path_exist(conf_path):

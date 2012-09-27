@@ -24,7 +24,7 @@ class VirtualTerminal(vte.Terminal):
         self.history = []
         self.history_length = history_length
         self.icon = icon
-        self.last_row_logged = 0
+        self.last_row_logged = 500
         self.log_file = log
         self.prompt_auto_reply = prompt_auto_reply
         self.prompt_watch = prompt_watch
@@ -36,15 +36,15 @@ class VirtualTerminal(vte.Terminal):
 
         if False:
             self.connect('char-size-changed', self.activate_action, 'char-size-changed')
-            #self.connect('child-exited', self.activate_action, 'child-exited')
+            self.connect('child-exited', self.activate_action, 'child-exited')
             self.connect('commit', self.activate_action, 'commit')
             self.connect('contents-changed', self.activate_action, 'contents-changed')
-            #self.connect('cursor-moved', self.activate_action, 'cursor-moved')
+            self.connect('cursor-moved', self.activate_action, 'cursor-moved')
             self.connect('decrease-font-size', self.activate_action, 'decrease-font-size')
             self.connect('deiconify-window', self.activate_action, 'deiconify-window')
             self.connect('emulation-changed', self.activate_action, 'emulation-changed')
             self.connect('encoding-changed', self.activate_action, 'encoding-changed')
-            #self.connect('eof', self.activate_action, 'eof')
+            self.connect('eof', self.activate_action, 'eof')
             self.connect('icon-title-changed', self.activate_action, 'icon-title-changed')
             self.connect('iconify-window', self.activate_action, 'iconify-window')
             self.connect('increase-font-size', self.activate_action, 'increase-font-size')
@@ -130,7 +130,7 @@ class VirtualTerminal(vte.Terminal):
         for ii in range(80 - len(command_string) - 2):
             spaces = spaces + ' '
         #self.feed('$ ' + str(command_string) + spaces)
-        #self.log('$ ' + str(command_string) + spaces)
+        self.log('$ ' + str(command_string) + spaces)
 
         command = command_string.split(' ')
         pid = self.fork_command(command=command[0], argv=command, directory=os.getcwd())

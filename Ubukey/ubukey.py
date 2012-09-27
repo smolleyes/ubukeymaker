@@ -128,7 +128,7 @@ class Ubukey_gui(object):
         if (width != '' and height != ''):
             if (width > 1900):
                 width = 1920
-                height = 1080
+                height = 1050
             print _("Xephyr's screen size : %s") % res
         else:
             width = 1280

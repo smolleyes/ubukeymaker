@@ -30,7 +30,7 @@ for p in $packageList ;do
 	fi
 done
 
-chroot "$DISTDIR"/chroot apt-get -y --force-yes install --no-install-recommends `cat /tmp/pack | xargs`
+sudo chroot "$DISTDIR"/chroot apt-get -y --force-yes install --no-install-recommends `cat /tmp/pack | xargs`
 
 ## extra-packages (install with recommends)
 if [ $session = "gnome" ]; then

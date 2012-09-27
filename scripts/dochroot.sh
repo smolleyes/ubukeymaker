@@ -3,6 +3,9 @@
 DISTDIR=$1
 USER=$2
 
+MY_PATH="`dirname \"$0\"`"
+echo "$MY_PATH"
+
 source /etc/ubukey/config
 
 function prepareChroot()
@@ -403,11 +406,9 @@ echo "[Desktop Entry]
 Type=Application
 Encoding=UTF-8
 Version=1.0
-Name=Assistant de customisation $sessionType
-Name[fr_FR]=Assistant de customisation $sessionType
-Comment[fr_FR]=Assistant de customisation pour $sessionType
-Comment=Assistant de customisation pour $sessionType
-Exec=$UBUKEYDIR/scripts/ubukey-$sessionType.sh
+Name=Ubukey addons manager
+Name[fr_FR]=gestionnaire de modules Ubukey
+Exec=$UBUKEYDIR/scripts/ubukey-addons_manager.sh
 X-GNOME-Autostart-enabled=true
 Icon=/usr/share/pixmaps/usbkey.png" | tee /etc/skel/"$deskdir"/ubukey-assist.desktop &>/dev/null
 
