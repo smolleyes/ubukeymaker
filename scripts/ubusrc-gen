@@ -240,4 +240,3 @@ sed -i '/^deb cdrom/d' /etc/apt/sources.list &>/dev/null
 apt-get update
 echo
 echo `color 32 "Mise a  jour des sources...ok"`
-sleep 2

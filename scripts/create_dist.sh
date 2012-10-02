@@ -22,6 +22,7 @@ function create_dist()
 	Si vous comptez utiliser un iso perso ou d'une autre distribution
 	Choisissez son equivalence (gnome, kde, xfce etc...)
 	" \
+		FALSE "Quantal-quetzal" "Ubuntu Quantal daily live-cd i386" \
 		FALSE "Precise-pangolin" "Ubuntu precise pangolin" \
 		FALSE "Precise-pangolin-64" "Ubuntu precise pangolin 64 bits" \
 		FALSE "Precise-kubuntu" "Kubuntu precise pangolin" \
@@ -37,6 +38,15 @@ function create_dist()
 	# wget http://cdimage.ubuntu.com/daily-live/current/MD5SUMS
 	# MD5SUM=$(cat MD5SUMS | grep desktop-i386 | awk '{print $1}')
 	case $DISTCHOICE in
+		Quantal-quetzal)
+		ISOURL="http://cdimage.ubuntu.com/daily-live/current/quantal-desktop-i386.iso"
+		ISONAME="quantal-desktop-i386.iso"
+		ISOTYPE="gnome"
+		cd /tmp
+		rm MD5* >/dev/null
+		wget http://cdimage.ubuntu.com/daily-live/current/MD5SUMS
+		MD5SUM=$(cat MD5SUMS | grep desktop-i386 | awk '{print $1}')
+		;;
 		Precise-pangolin)
 		ISOURL="http://ubuntu.mirrors.proxad.net/12.04/ubuntu-12.04-desktop-i386.iso"
 		ISONAME="ubuntu-12.04-desktop-i386.iso"

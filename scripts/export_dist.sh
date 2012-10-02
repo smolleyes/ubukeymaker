@@ -358,7 +358,7 @@ echo -e "$message" | tee -a /tmp/chrootlog.log &>/dev/null
 }
 
 ## fix user etrange dans mksquashfs (temp) et mode 755 persistent
-sed -i 's/set passwd\/user-uid 999/set passwd\/user-uid 1001/' /usr/share/initramfs-tools/scripts/casper-bottom/10adduser
+sed -i 's/set passwd\/user-uid 999/set passwd\/user-uid 1001/' /usr/share/initramfs-tools/scripts/casper-bottom/25adduser
 sed -i 's/rw,noatime,mode=755/rw,noatime/' /usr/share/initramfs-tools/scripts/casper
 
 ## maj initiale du kernel

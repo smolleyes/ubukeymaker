@@ -65,10 +65,10 @@ apt-get clean &>/dev/null
 dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null 
 
 ## copie fichiers sources et cle gpg locales
-rm "${DISTDIR}"/chroot/etc/ubukey/sources/sources.list.d/private-ppa* &>/dev/null
-cp -R -f /etc/apt/{sources.list,trusted.*,sources.list.d} "${DISTDIR}"/chroot/etc/apt/
-cp -R -f /etc/apt/{sources.list,trusted.*,sources.list.d} "${DISTDIR}"/chroot/etc/ubukey/sources
-rm "${DISTDIR}"/chroot/etc/apt/sources.list.d/private-ppa* &>/dev/null
+#rm "${DISTDIR}"/chroot/etc/ubukey/sources/sources.list.d/private-ppa* &>/dev/null
+#cp -R -f /etc/apt/{sources.list,trusted.*,sources.list.d} "${DISTDIR}"/chroot/etc/apt/
+#cp -R -f /etc/apt/{sources.list,trusted.*,sources.list.d} "${DISTDIR}"/chroot/etc/ubukey/sources
+#rm "${DISTDIR}"/chroot/etc/apt/sources.list.d/private-ppa* &>/dev/null
 
 ## exporter la liste des paquets locaux
 dpkg --get-selections | tee "${DISTDIR}"/chroot/etc/ubukey/sources/pkglist.selections &>/dev/null
@@ -157,13 +157,14 @@ rm -R "${DISTDIR}"/usb/casper/* &>/dev/null
 ### demarre le chroot
 mkdir "${DISTDIR}"/chroot/dev &>/dev/null
 mount -o bind /dev "${DISTDIR}"/chroot/dev &>/dev/null
+#mount -o bind /dev/shm "${DISTDIR}"/chroot/dev/shm &>/dev/null
 
 rm "${DISTDIR}"/chroot/var/lib/dbus/machine-id &>/dev/null
 dbus-uuidgen | tee "${DISTDIR}"/chroot/var/lib/dbus/machine-id &>/dev/null
 
 mkdir "${DISTDIR}"/chroot/var/run/dbus &>/dev/null
-mount -o rbind /var/run/dbus "${DISTDIR}"/chroot/var/run/dbus &>/dev/null
-rm "${DISTDIR}"/chroot/var/run/dbus/pid &>/dev/null
+#mount -o rbind /var/run/dbus "${DISTDIR}"/chroot/var/run/dbus &>/dev/null
+rm "${DISTDIR}"/chroot/var/run/dbus/* &>/dev/null
 
 deftty="`ps ax | grep -w '[/]usr/bin/X :0' | awk '{print $2}' | sed 's/tty//'`"
 rm "${DISTDIR}"/chroot/tmp/deftty &>/dev/null
@@ -200,7 +201,7 @@ chmod +x "${DISTDIR}"/chroot/$UBUKEYDIR/addons/* -R &>/dev/null
 
 ## clean dpkg
 > "${DISTDIR}"/chroot/var/lib/dpkg/statoverride
-
+chroot "${DISTDIR}"/chroot /usr/share/ubukey/scripts/ubusrc-gen
 }
 
 ##########################################################
@@ -246,8 +247,8 @@ starter="$(cat /etc/ubukey/ubukeyconf | grep -e "session_starter" | sed 's/sessi
 hostVersion="$(cat /etc/ubukey/ubukeyconf | grep -e "hostVersion" | sed 's/hostVersion=//')"
 
 if [ "$sessionType" = "console" ]; then
-    sessionType="console"
-    starter="xterm"
+sessionType="console"
+starter="xterm"
 fi
 
 ## langue dans chroot
@@ -263,14 +264,14 @@ $LOCALUTF
 mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t devpts none /dev/pts
+mount -t tmpfs none /dev/shm
+chmod 1777 /dev/shm
 
 umount -f /lib/modules/*/volatile &>/dev/null
 
-
-
 ## check sources
 message "$(eval_gettext 'Verifying packages sources, please wait...')"
-#/bin/bash $UBUKEYDIR/scripts/themescan.sh
+#. $UBUKEYDIR/scripts/ubusrc-gen
 
 ## Changement de la langue par defaut des consoles tty avec : $LOCALSIMPLE
 sed -i 's/XKBLAYOUT=.*/XKBLAYOUT="'$LOCALSIMPLE'"/' /etc/default/console-setup
@@ -463,12 +464,6 @@ fi
 done
 fi
 
-## verif compiz
-if [ -e "/etc/skel/.config/compiz/fusion-icon" ]; then
-echo -e "Remplace compiz par $decorator"
-sed -i 's/wm = .*/wm = '"$decorator"' /' /etc/skel/.config/compiz/fusion-icon
-fi
-
 #if [ "$sessionType" != "console" ]; then
 ## verif lanceur partage du / (bug avec nautilus...)
 #if [[ ! -e "/usr/bin/gnome-commander" || ! -e "/usr/share/pixmaps/share.png" ]]; then
@@ -479,16 +474,25 @@ fi
 #fi
 
 #### START DBUS
-rm -R /home/"$USER"/.dbus
-rm -R /var/run/dbus/* 2>/dev/null
-#important sinon pas moyen de booter dbus!
-mkdir /var/run/dbus/ 2>/dev/null
-dbus-uuidgen > /var/lib/dbus/machine-id
-/etc/init.d/dbus start
+#rm -R /home/"$USER"/.dbus
+#rm -R /var/run/dbus/* 2>/dev/null
+##important sinon pas moyen de booter dbus!
+#mkdir /var/run/dbus/ 2>/dev/null
+#dbus-uuidgen > /var/lib/dbus/machine-id
+#start dbus
+#dbus-daemon --system --fork
+
+mkdir -p /var/run/dbus
+rm -f /var/run/dbus/pid
+chown messagebus:messagebus /var/run/dbus
+dbus-uuidgen --ensure
 dbus-daemon --system --fork
+sudo -u $USER mkdir /home/$USER/.gvfs
+fusermount -u -z /home/$USER/.gvfs
+
 ## fix initctl
 dpkg-divert --local --rename --add /sbin/initctl
-﻿ln -s /bin/true /sbin/initctl
+﻿#ln -s /bin/true /sbin/initctl
 if [[ ! -e "/sbin/initctl" && -e "/sbin/initctl.distrib" ]]; then
 ln -s /sbin/initctl.distrib /sbin/initctl
 fi
@@ -510,20 +514,30 @@ sudo -u "$USER" dconf write /org/gnome/desktop/lockdown/disable-lock-screen true
 ############## STARTX #############################
 
 cd /tmp
-rm -R /tmp/.X11*
+rm -R /tmp/.*
 xauth generate :5 .
 
 message "Tout est pret, demarre X dans le chroot ! \n"
 
-message "starter = $starter"
 if [[ `echo "$starter" | grep xterm` ]]; then
-    starter="xterm & '$decorator' --replace"
+starter="xterm & '$decorator' --replace"
 fi
-chown -hR "$USER":"$USER" /etc/skel
+if [[ `echo "$starter" | grep -E "gnome$"` ]]; then
+if [ ! -e '/usr/bin/gnome-shell' ]; then
+message "Installing gnome-shell...\n"
+apt-get -y install gnome-shell gnome-tweak-tool
+mkdir -p /usr/share/gnome-shell/extensions
+fi
+fi
+
+chown -hR "$USER":"$USER" /home/smo
+
+message "starter = $starter"
 
 echo '#!/bin/bash
 export DISPLAY=:5
-sudo -u '$USER' '$starter'
+sudo -u '$USER' 'ck-launch-session dbus-launch $starter' > /home/$USER/.dbus-session
+#sudo -u '$USER' '$starter'
 ' | tee /usr/local/bin/startchroot &>/dev/null
 chmod +x /usr/local/bin/startchroot
 
@@ -658,7 +672,6 @@ message "mise a jour des sources..."
 apt-get clean &>/dev/null
 ## nettoie fichiers desinstalles mais pas la conf donc toujours apparents
 dpkg -l |grep ^rc |awk '{print $2}' |xargs dpkg -P &>/dev/null 
-apt-get update
 message "\nReinstallation du kernel, patience svp...\n"
 apt-get remove --purge -y linux-headers* linux-image*
 apt-get -y --force-yes install --reinstall linux-headers-generic linux-image-generic
@@ -776,8 +789,6 @@ ln -sf /etc/skel/ /home/"$USER"
 rm /etc/skel/skel
 cd /home/"$USER"
 export DISPLAY=localhost:5
-#$UBUKEYDIR/scripts/ubusrc-gen
-apt-get update
 if [ ! -e "/usr/bin/xterm" ]; then
 message "Installation de xterm \n"
 apt-get install -y xterm
@@ -838,6 +849,8 @@ umount -l -f "${DISTDIR}"/chroot/proc &>/dev/null
 umount -l -f "${DISTDIR}"/chroot/sys &>/dev/null
 umount -l -f "${DISTDIR}"/chroot/dev/pts &>/dev/null
 umount -l -f "${DISTDIR}"/chroot/dev &>/dev/null
+umount -l -f "${DISTDIR}"/chroot/dev/shm &>/dev/null
+chmod 1777 /dev/shm
 umount -f "${DISTDIR}"/chroot/var/run/dbus &>/dev/null
 rm "${DISTDIR}"/chroot/var/run/* &>/dev/null
 umount -l -f "${DISTDIR}"/chroot/media/pc-local/media
