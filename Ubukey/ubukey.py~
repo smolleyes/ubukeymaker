@@ -123,7 +123,7 @@ class Ubukey_gui(object):
         #width = gtk.gdk.screen_width()
         #height = gtk.gdk.screen_height()
         #self.window.set_default_size((width - 50), (height - 80))
-        res = os.popen("xrandr --current | grep '*' | uniq | awk '{print $1}' | tail -n1", 'r').read().strip()
+        res = os.popen("xrandr --current | grep '*' | uniq | awk '{print $1}'", 'r').read().strip()
         width,height = res.split('x')
         if (width != '' and height != ''):
             if (width > 1900):
@@ -166,7 +166,7 @@ class Ubukey_gui(object):
             os.remove(lockfile)
         os.system('killall -9 Xephyr')
         cmd = "Xephyr :5 -dpms -s 0 -title ubukey-xephyr \
-        -ac \
+        -ac -s 120 \
         -keybd ephyr,,xkbrules=evdev,xkbmodel=evdev,xkblayout=%s,xkbvariant=oss, -parent %s +extension RANDR +extension XTEST +extension DOUBLE-BUFFER +extension Composite +extension XFIXES +extension DAMAGE +extension RENDER +extension GLX & sleep 4" % (LANG,xid)
         self.xephyr_pipe = Popen(cmd,shell=True)
         

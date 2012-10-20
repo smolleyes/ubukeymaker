@@ -22,7 +22,8 @@ function create_dist()
 	Si vous comptez utiliser un iso perso ou d'une autre distribution
 	Choisissez son equivalence (gnome, kde, xfce etc...)
 	" \
-		FALSE "Quantal-quetzal" "Ubuntu Quantal daily live-cd i386" \
+		FALSE "Quantal-quetzal" "Ubuntu Quantal i386" \
+		FALSE "Quantal-quetzal-64" "Ubuntu Quantal 64 bits" \
 		FALSE "Precise-pangolin" "Ubuntu precise pangolin" \
 		FALSE "Precise-pangolin-64" "Ubuntu precise pangolin 64 bits" \
 		FALSE "Precise-kubuntu" "Kubuntu precise pangolin" \
@@ -39,13 +40,16 @@ function create_dist()
 	# MD5SUM=$(cat MD5SUMS | grep desktop-i386 | awk '{print $1}')
 	case $DISTCHOICE in
 		Quantal-quetzal)
-		ISOURL="http://cdimage.ubuntu.com/daily-live/current/quantal-desktop-i386.iso"
-		ISONAME="quantal-desktop-i386.iso"
+		ISOURL="http://ubuntu.mirrors.proxad.net/quantal/ubuntu-12.10-desktop-i386.iso"
+		ISONAME="ubuntu-12.10-desktop-i386.iso"
 		ISOTYPE="gnome"
-		cd /tmp
-		rm MD5* >/dev/null
-		wget http://cdimage.ubuntu.com/daily-live/current/MD5SUMS
-		MD5SUM=$(cat MD5SUMS | grep desktop-i386 | awk '{print $1}')
+		MD5SUM="b4191c1d1d6fdf358c154f8bf86b97dd"
+		;;
+		Quantal-quetzal-64)
+		ISOURL="http://ubuntu.mirrors.proxad.net/quantal/ubuntu-12.10-desktop-amd64.iso"
+		ISONAME="ubuntu-12.10-desktop-amd64.iso"
+		ISOTYPE="gnome"
+		MD5SUM="7ad57cadae955bd04019389d4b9c1dcb"
 		;;
 		Precise-pangolin)
 		ISOURL="http://ubuntu.mirrors.proxad.net/12.04/ubuntu-12.04-desktop-i386.iso"
